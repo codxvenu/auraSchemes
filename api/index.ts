@@ -534,14 +534,15 @@ app.post("/api/mini-game/spin", (req, res) => {
   db.users[userIndex].balance -= SPIN_COST;
 
   // Spin yields: 
-  // 0.5, 1.0, 2.0 (money back), 5.0 (good), 10.0 (super), 50.0 (grand jackpot!)
+  // 5000 IDR (99% chance), 10000 IDR (1% chance), others (0% chance)
   const outcomes = [
-    { label: "Consolation Dividend", prize: 0.5, weight: 35 },
-    { label: "Stable Yield Refund", prize: 1.0, weight: 30 },
-    { label: "Equity Breakeven Reward", prize: 2.0, weight: 20 },
-    { label: "Slate Node Energy Voucher", prize: 5.0, weight: 10 },
-    { label: "Aura Cosmic Booster Bundle", prize: 10.0, weight: 4 },
-    { label: "GRAND APEX JACKPOT", prize: 50.0, weight: 1 }
+    { label: "5000 IDR Prize Value", prize: 0.35, weight: 99 },
+    { label: "10000 IDR grand Prize", prize: 0.70, weight: 1 },
+    { label: "Iphone 17", prize: 0, weight: 0 },
+    { label: "600k IDR", prize: 0, weight: 0 },
+    { label: "Playstation", prize: 0, weight: 0 },
+    { label: "Refrigerator", prize: 0, weight: 0 },
+    { label: "AC", prize: 0, weight: 0 }
   ];
 
   // Weighted random logic
@@ -755,31 +756,5 @@ app.get("/api/news", (req, res) => {
 });
 
 
-// Serve static frontend and start listening
-async function startServer() {
-  if (process.env.NODE_ENV !== "production") {
-    const { createServer: createViteServer } = await import("vite");
-    const vite = await createViteServer({
-      server: { middlewareMode: true },
-      appType: "spa",
-    });
-    app.use(vite.middlewares);
-  } else {
-    const distPath = path.join(process.cwd(), "dist");
-    app.use(express.static(distPath));
-    app.get("*", (req, res) => {
-      res.sendFile(path.join(distPath, "index.html"));
-    });
-  }
-
-  // Bind to Port and Host
-  app.listen(PORT, "0.0.0.0", () => {
-    console.log(`Aura Engine running perfectly at http://0.0.0.0:${PORT}`);
-  });
-}
-
-if (!process.env.VERCEL) {
-  startServer();
-}
-
 export default app;
+

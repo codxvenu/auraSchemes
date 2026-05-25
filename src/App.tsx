@@ -28,6 +28,16 @@ import {
   HelpCircle as QuestionIcon
 } from "lucide-react";
 
+const SECTORS = [
+  { backendLabel: "5000 IDR Prize Value", label: "5,000 IDR", icon: "💵", color: "#10b981", rgb: "16, 185, 129" },
+  { backendLabel: "10000 IDR grand Prize", label: "10,000 IDR", icon: "💰", color: "#f59e0b", rgb: "245, 158, 11" },
+  { backendLabel: "Iphone 17", label: "iPhone 17", icon: "📱", color: "#3b82f6", rgb: "59, 130, 246" },
+  { backendLabel: "600k IDR", label: "600k IDR", icon: "💸", color: "#ec4899", rgb: "236, 72, 153" },
+  { backendLabel: "Playstation", label: "Playstation", icon: "🎮", color: "#8b5cf6", rgb: "139, 92, 246" },
+  { backendLabel: "Refrigerator", label: "Refrigerator", icon: "❄️", color: "#06b6d4", rgb: "6, 182, 212" },
+  { backendLabel: "AC", label: "Air Cond.", icon: "💨", color: "#6b7280", rgb: "107, 114, 128" }
+];
+
 export default function App() {
   const [user, setUser] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(localStorage.getItem("aura_token"));
@@ -47,6 +57,7 @@ export default function App() {
   const [adminSettings, setAdminSettings] = useState<any>(null);
 
   // Financial inputs
+  const [financialSubTab, setFinancialSubTab] = useState<"deposit" | "withdraw">("deposit");
   const [depositAmount, setDepositAmount] = useState<string>("50");
   const [depositTxid, setDepositTxid] = useState<string>("");
   const [depositMethod, setDepositMethod] = useState<string>("USDT");
@@ -75,6 +86,7 @@ export default function App() {
   const [copiedLink, setCopiedLink] = useState<boolean>(false);
   const [spinResult, setSpinResult] = useState<{ outcome: string; prize: number } | null>(null);
   const [isSpinning, setIsSpinning] = useState<boolean>(false);
+  const [wheelDegree, setWheelDegree] = useState<number>(0);
   const [spinError, setSpinError] = useState<string | null>(null);
 
   // Notification Banner triggers
@@ -241,8 +253,12 @@ export default function App() {
       setActiveTab("marketplace");
     } else if (catId === "lucky-wheel") {
       setActiveTab("marketplace");
-    } else if (catId === "cash-out" || catId === "deposit") {
+    } else if (catId === "cash-out") {
       setActiveTab("financials");
+      setFinancialSubTab("withdraw");
+    } else if (catId === "deposit") {
+      setActiveTab("financials");
+      setFinancialSubTab("deposit");
     } else if (catId === "global-news") {
       setActiveTab("news");
     } else if (catId === "account-settings") {
@@ -273,17 +289,28 @@ export default function App() {
     try {
       const res = await auraApi.spinLuckyWheel();
       
-      // Simulate real-feeling delayed graphic acceleration wheel rotations
+      const targetSectorIndex = SECTORS.findIndex(s => s.backendLabel === res.outcome);
+      const safeTargetIndex = targetSectorIndex !== -1 ? targetSectorIndex : 0;
+      
+      const sliceAngle = 360 / 7;
+      const finalAngleOfSector = (safeTargetIndex * sliceAngle) + (sliceAngle / 2);
+      const additionalRotations = 2160; // 6 full rotational spins for maximum dramatic effect
+      const offsetWithinSector = (Math.random() - 0.5) * (sliceAngle * 0.45); // Safe natural padding representation
+      
+      // Calculate target stopping angle (ensuring top position corresponds to 270 degrees)
+      const targetRotationAngle = wheelDegree + additionalRotations + (270 - finalAngleOfSector) + offsetWithinSector;
+      setWheelDegree(targetRotationAngle);
+
+      // Match transition duration precisely (4.2 seconds) to allow stopping animation physics to fully complete
       setTimeout(async () => {
         setIsSpinning(false);
         setSpinResult({
-          outcome: res.outcome,
+          outcome: SECTORS[safeTargetIndex].label, // Keep matching labeled currency or physical gadget
           prize: res.reward
         });
-        // refresh balance
         setUser(prev => prev ? { ...prev, balance: res.newBalance } : null);
         await updateUserData();
-      }, 1600);
+      }, 4200);
 
     } catch (err: any) {
       setIsSpinning(false);
@@ -657,33 +684,137 @@ export default function App() {
                     <span className="text-[10px] uppercase font-mono tracking-widest text-emerald-400 block font-bold">🎡 CATEGORY LUNCH: ACTIVE GAME</span>
                     <h3 className="text-lg font-bold tracking-tight font-display text-white">Cosmic Lucky Dividend Wheel</h3>
                     <p className="text-xs text-zinc-400 leading-relaxed">
-                      Test your yield luck! Spinning costs <span className="font-mono text-white">$2.00</span> deducted from your capital pool. Rewards range from small system incentives up to the maximum high-voltage <span className="font-semibold text-emerald-400">$50.00 GRAND APEX JACKPOT</span>.
+                      Test your yield luck! Spinning costs <span className="font-mono text-white">$2.00</span> deducted from your capital pool. Stand a chance to draw any of our premium physical gadgets or raw currency packets, calculated live by secure Aura backend protocols.
                     </p>
                     
                     <div className="pt-3 flex flex-wrap gap-2">
-                      <span className="px-2.5 py-1 bg-zinc-950 border border-zinc-800 rounded-lg text-[10px] font-mono">Jackpot: $50.00 (1%)</span>
-                      <span className="px-2.5 py-1 bg-zinc-950 border border-zinc-800 rounded-lg text-[10px] font-mono">Aura Booster: $10.00 (4%)</span>
-                      <span className="px-2.5 py-1 bg-zinc-950 border border-zinc-800 rounded-lg text-[10px] font-mono">Refund Rate: $2.00 (20%)</span>
+                      <span className="px-2.5 py-1 bg-zinc-950 border border-zinc-800 rounded-lg text-[10px] font-mono text-emerald-400 font-semibold">5000 IDR (99% win)</span>
+                      <span className="px-2.5 py-1 bg-zinc-950 border border-zinc-800 rounded-lg text-[10px] font-mono text-amber-500 font-semibold">10000 IDR (1% win)</span>
+                      <span className="px-2.5 py-1 bg-zinc-950 border border-zinc-900 rounded-lg text-[10px] font-mono text-zinc-600">Iphone 17 (0% win)</span>
+                      <span className="px-2.5 py-1 bg-zinc-950 border border-zinc-900 rounded-lg text-[10px] font-mono text-zinc-600">600k IDR (0% win)</span>
+                      <span className="px-2.5 py-1 bg-zinc-950 border border-zinc-900 rounded-lg text-[10px] font-mono text-zinc-600">Playstation (0% win)</span>
+                      <span className="px-2.5 py-1 bg-zinc-950 border border-zinc-900 rounded-lg text-[10px] font-mono text-zinc-600">Refrigerator (0% win)</span>
+                      <span className="px-2.5 py-1 bg-zinc-950 border border-zinc-900 rounded-lg text-[10px] font-mono text-zinc-600">AC (0% win)</span>
                     </div>
                   </div>
 
                   <div className="flex flex-col items-center shrink-0 w-full md:w-auto">
-                    <div className="relative w-44 h-44 bg-zinc-950 border-4 border-zinc-800 rounded-full flex items-center justify-center overflow-hidden shadow-2xl">
-                      <div className="absolute inset-2 border border-zinc-800 rounded-full border-dashed"></div>
+                    {/* Beautiful Casino Style Physical Wheel */}
+                    <div className="relative w-72 h-72 bg-zinc-950 border-4 border-zinc-900 rounded-full flex items-center justify-center shadow-[0_15px_35px_rgba(0,0,0,0.8)] overflow-visible">
                       
-                      {/* Spinning wheel visualization mockup */}
-                      <div className={`absolute w-full h-full rounded-full transition-transform duration-1500 ${isSpinning ? "animate-spin" : ""}`} style={{ animationDuration: '0.4s' }}>
-                        <div className="absolute top-0 left-1/2 w-0.5 h-1/2 bg-zinc-800 origin-bottom"></div>
-                        <div className="absolute top-1/2 left-0 w-1/2 h-0.5 bg-zinc-800 origin-right"></div>
-                        <div className="absolute top-1/4 left-1/4 w-full h-0.5 bg-zinc-800 rotate-45 origin-center"></div>
-                        <div className="absolute top-1/4 left-1/4 w-full h-0.5 bg-zinc-850 -rotate-45 origin-center"></div>
+                      {/* Real Physical Outer Pointer at 12 o'clock (270 degrees) pointing downwards */}
+                      <div className="absolute -top-3.5 z-20 w-8 h-8 flex justify-center items-center pointer-events-none drop-shadow-[0_4px_6px_rgba(0,0,0,0.6)]">
+                        <div className="w-0 h-0 border-l-[14px] border-l-transparent border-r-[14px] border-r-transparent border-t-[24px] border-t-rose-500 rounded-2xs"></div>
+                        {/* Dynamic status light bead on top */}
+                        <div className="absolute top-0.5 w-3 h-3 bg-white rounded-full border border-rose-600 animate-ping"></div>
+                        <div className="absolute top-0.5 w-3 h-3 bg-white rounded-full border border-rose-600"></div>
                       </div>
 
-                      <div className="absolute top-3 w-5 h-5 bg-rose-500 rounded-t-full rotate-180 origin-center"></div>
+                      {/* Rotating Wheel Container wrapper with CSS easing physics */}
+                      <div 
+                        className="absolute w-full h-full rounded-full overflow-hidden"
+                        style={{
+                          transform: `rotate(${wheelDegree}deg)`,
+                          transition: isSpinning 
+                            ? "transform 4.2s cubic-bezier(0.15, 0.88, 0.12, 1)" 
+                            : "transform 0.5s cubic-bezier(0.25, 1, 0.5, 1)"
+                        }}
+                      >
+                        <svg viewBox="0 0 400 400" className="w-full h-full">
+                          <defs>
+                            <radialGradient id="goldCenter" cx="50%" cy="50%" r="50%">
+                              <stop offset="0%" stopColor="#f59e0b" />
+                              <stop offset="60%" stopColor="#d97706" />
+                              <stop offset="100%" stopColor="#78350f" />
+                            </radialGradient>
+                          </defs>
 
-                      {/* Spinning central chip */}
-                      <div className="absolute bg-[#0c0c0e] border-2 border-zinc-800 w-16 h-16 rounded-full flex flex-col items-center justify-center shadow-lg font-bold font-mono text-[11px] text-white">
-                        {isSpinning ? "SPINNING" : "$2.00"}
+                          {/* Sector pies */}
+                          {SECTORS.map((sector, idx) => {
+                            const sliceAngle = 360 / 7;
+                            const startAngle = idx * sliceAngle;
+                            const endAngle = (idx + 1) * sliceAngle;
+                            const radius = 196;
+                            const cx = 200;
+                            const cy = 200;
+                            
+                            const rad = (deg: number) => (deg * Math.PI) / 180;
+                            
+                            const x1 = cx + radius * Math.cos(rad(startAngle));
+                            const y1 = cy + radius * Math.sin(rad(startAngle));
+                            const x2 = cx + radius * Math.cos(rad(endAngle));
+                            const y2 = cy + radius * Math.sin(rad(endAngle));
+                            
+                            const d = `M ${cx} ${cy} L ${x1} ${y1} A ${radius} ${radius} 0 0 1 ${x2} ${y2} Z`;
+                            const middleAngle = startAngle + (sliceAngle / 2);
+
+                            return (
+                              <g key={`slice-${idx}`}>
+                                <path 
+                                  d={d} 
+                                  fill={sector.color} 
+                                  stroke="#09090b" 
+                                  strokeWidth="2.5" 
+                                  className="transition-opacity hover:opacity-95"
+                                />
+                                {/* Label and Icon rotated radially outward */}
+                                <g transform={`rotate(${middleAngle} 200 200) translate(300, 200) rotate(90)`}>
+                                  <text 
+                                    textAnchor="middle" 
+                                    dominantBaseline="central" 
+                                    className="text-2xl filter drop-shadow-[0_1px_2px_rgba(0,0,0,0.5)] select-none"
+                                    y="-13"
+                                  >
+                                    {sector.icon}
+                                  </text>
+                                  <text 
+                                    textAnchor="middle" 
+                                    dominantBaseline="central" 
+                                    fill="#ffffff" 
+                                    className="text-[9px] font-mono tracking-tighter uppercase font-extrabold select-none filter drop-shadow-[0_1.5px_3px_rgba(0,0,0,0.95)]"
+                                    y="13"
+                                  >
+                                    {sector.label}
+                                  </text>
+                                </g>
+                              </g>
+                            );
+                          })}
+
+                          {/* Las Vegas style pulsing marquee lights along the outer brass rim */}
+                          {Array.from({ length: 14 }).map((_, i) => {
+                            const angle = i * (360 / 14);
+                            const r = 188;
+                            const x = 200 + r * Math.cos((angle * Math.PI) / 180);
+                            const y = 200 + r * Math.sin((angle * Math.PI) / 180);
+                            return (
+                              <circle 
+                                key={`marquee-${i}`} 
+                                cx={x} 
+                                cy={y} 
+                                r="5.5" 
+                                fill="#ffffff" 
+                                stroke="#d97706" 
+                                strokeWidth="1.5" 
+                                className="animate-pulse"
+                                style={{ 
+                                  animationDuration: '0.8s', 
+                                  animationDelay: `${i * 120}ms` 
+                                }}
+                              />
+                            );
+                          })}
+
+                          {/* Central gold metallic hub pin */}
+                          <circle cx="200" cy="200" r="32" fill="url(#goldCenter)" stroke="#18181b" strokeWidth="4" className="filter drop-shadow-[0_3px_5px_rgba(0,0,0,0.5)]" />
+                          <circle cx="200" cy="200" r="14" fill="#09090b" />
+                        </svg>
+                      </div>
+
+                      {/* Display center chip overlay - remains static inside the central gold circle */}
+                      <div className="absolute z-10 bg-[#09090b]/90 border border-zinc-800 w-16 h-16 rounded-full flex flex-col items-center justify-center shadow-inner font-bold font-mono text-[10px] text-zinc-300">
+                        <span className="text-[8px] text-zinc-500 uppercase tracking-widest block scale-90 mb-0.5">COST</span>
+                        <span className="text-white text-[11px] font-extrabold">$2.00</span>
                       </div>
                     </div>
 
@@ -691,20 +822,20 @@ export default function App() {
                       onClick={handleSpinLuckyWheel}
                       disabled={isSpinning || user.balance < 2}
                       id="btn-spin-wheel"
-                      className="mt-4 px-6 py-2.5 bg-white hover:bg-zinc-200 text-zinc-950 text-xs font-bold tracking-wider uppercase rounded-xl transition-all shadow-lg text-center cursor-pointer disabled:opacity-50 disabled:pointer-events-none"
+                      className="mt-5 px-8 py-3 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 text-white text-xs font-mono font-bold tracking-widest uppercase rounded-xl transition-all shadow-[0_4px_12px_rgba(16,185,129,0.3)] hover:shadow-[0_6px_20px_rgba(16,185,129,0.4)] active:scale-95 text-center cursor-pointer disabled:opacity-30 disabled:pointer-events-none"
                     >
-                      {isSpinning ? "CALCULATING PRIZE..." : "SPIN NOW"}
+                      {isSpinning ? "🎰 SPINNING..." : "⚡ SPIN LUCKY WHEEL"}
                     </button>
 
                     {spinError && (
-                      <p className="text-[10px] text-rose-400 mt-2 font-mono">{spinError}</p>
+                      <p className="text-[10px] text-rose-400 mt-2 font-mono bg-rose-950/20 px-3 py-1.5 border border-rose-900/30 rounded-lg">{spinError}</p>
                     )}
 
                     {spinResult && (
-                      <div className="mt-3 text-center animate-bounce">
-                        <span className="block text-[10px] text-zinc-500 uppercase">WINNER!</span>
-                        <span className="font-mono text-emerald-400 font-bold text-xs">
-                          +{formatCurrency(spinResult.prize)} ({spinResult.outcome})
+                      <div className="mt-4 text-center animate-bounce bg-emerald-950/20 border border-emerald-900/30 px-4 py-2 rounded-xl">
+                        <span className="block text-[9px] text-zinc-400 uppercase font-mono tracking-widest">Aura Wheel Drew</span>
+                        <span className="font-mono text-emerald-400 font-extrabold text-xs">
+                          {spinResult.outcome} Received!
                         </span>
                       </div>
                     )}
@@ -912,261 +1043,148 @@ export default function App() {
 
         {/* -------------------- TAB 2: FINANCIAL OPERATIONS -------------------- */}
         {activeTab === "financials" && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="flex flex-col gap-6 max-w-2xl mx-auto w-full">
             
-            {/* COMPONENT: SECURE DEPOSIT MODULE (Admin-controlled finance details) */}
-            <div className="bg-zinc-900 border border-zinc-800 rounded-[1.5rem] p-5 space-y-4 shadow-xl">
-              <div className="space-y-1">
-                <span className="text-[10px] font-mono font-bold tracking-widest text-emerald-400 uppercase block">Capital Refunding Desk</span>
-                <h3 className="text-lg font-bold font-display text-white">Deposit Secure Assets</h3>
-                <p className="text-xs text-zinc-400 leading-relaxed">
-                  Refuel your capital pool balance instantly. Minimum: <span className="font-mono text-white">$5.00</span>, Maximum: <span className="font-mono text-white">$300.00</span>. Review escrow details provided below, make transfer, and submit Transaction Hash details to the audit board.
-                </p>
-              </div>
-
-              {/* ADMIN SETTINGS BANK DETAILS BOX */}
-              {adminSettings ? (
-                <div className="bg-zinc-950 border border-zinc-850 p-4 rounded-xl space-y-3 font-sans">
-                  <div className="flex justify-between items-center pb-2 border-b border-zinc-900">
-                    <span className="text-xs font-bold text-zinc-300">Target Crypto USDT (TRC-20)</span>
-                    <span className="text-[9px] bg-emerald-950 text-emerald-400 px-2 py-0.5 rounded-full font-mono">ONLINE</span>
+            {financialSubTab === "deposit" && (
+              <div className="space-y-6">
+                {/* COMPONENT: SECURE DEPOSIT MODULE (Admin-controlled finance details) */}
+                <div className="bg-zinc-900 border border-zinc-800 rounded-[1.5rem] p-5 space-y-4 shadow-xl">
+                  <div className="space-y-1">
+                    <span className="text-[10px] font-mono font-bold tracking-widest text-emerald-400 uppercase block">Capital Refunding Desk</span>
+                    <h3 className="text-lg font-bold font-display text-white">Deposit Secure Assets</h3>
+                    <p className="text-xs text-zinc-400 leading-relaxed">
+                      Refuel your capital pool balance instantly. Minimum: <span className="font-mono text-white">$5.00</span>, Maximum: <span className="font-mono text-white">$300.00</span>. Review escrow details provided below, make transfer, and submit Transaction Hash details to the audit board.
+                    </p>
                   </div>
-                  
-                  <div className="space-y-1.5 font-mono text-xs">
-                    <div>
-                      <span className="text-[10px] text-zinc-500 font-sans block">Escrow Wallet Address:</span>
-                      <div className="flex gap-2 items-center">
-                        <span className="text-[11px] text-white break-all bg-zinc-900/40 p-1.5 rounded">{adminSettings.paymentDetails.usdtAddress}</span>
-                        <button 
-                          onClick={() => {
-                            navigator.clipboard.writeText(adminSettings.paymentDetails.usdtAddress);
-                            alert("USDT Address saved to clipboard.");
-                          }}
-                          className="p-1 bg-zinc-90 w font-mono text-xs text-zinc-400 hover:text-white rounded-lg cursor-pointer shrink-0"
-                        >
-                          Copy
-                        </button>
+
+                  {/* ADMIN SETTINGS BANK DETAILS BOX */}
+                  {adminSettings ? (
+                    <div className="bg-zinc-950 border border-zinc-850 p-4 rounded-xl space-y-3 font-sans">
+                      <div className="flex justify-between items-center pb-2 border-b border-zinc-900">
+                        <span className="text-xs font-bold text-zinc-300">Target Crypto USDT (TRC-20)</span>
+                        <span className="text-[9px] bg-emerald-950 text-emerald-400 px-2 py-0.5 rounded-full font-mono">ONLINE</span>
                       </div>
-                    </div>
-
-                    <div className="pt-2 border-t border-zinc-900">
-                      <span className="text-[10px] text-zinc-500 font-sans block mb-1">Domestic Fiat Route:</span>
-                      <div className="space-y-1 text-zinc-300 text-xs">
-                        <p><span className="text-zinc-500 font-sans">Bank:</span> {adminSettings.paymentDetails.bankName}</p>
-                        <p><span className="text-zinc-500 font-sans">A/C:</span> {adminSettings.paymentDetails.accountNumber}</p>
-                        <p><span className="text-zinc-500 font-sans">Name:</span> {adminSettings.paymentDetails.accountName}</p>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="pt-2 border-t border-zinc-900 text-[10px] text-zinc-500 italic bg-zinc-900/20 p-2.5 rounded-lg border border-dashed border-zinc-850">
-                    <span className="text-zinc-400 font-sans font-bold block mb-0.5">Compliance Instructions:</span>
-                    {adminSettings.paymentDetails.instructions}
-                  </div>
-                </div>
-              ) : (
-                <div className="bg-zinc-950 p-4 rounded-xl text-center text-xs font-mono text-zinc-600">
-                  Retrieving financial instruction sets...
-                </div>
-              )}
-
-              {/* ACTION INPUT FORM */}
-              <form onSubmit={handleDepositSubmit} className="space-y-3 font-sans">
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="block text-[10px] font-medium text-zinc-500 mb-1">Drawn Amount ($)</label>
-                    <input 
-                      type="number" 
-                      required 
-                      min="5" 
-                      max="300"
-                      value={depositAmount} 
-                      onChange={(e) => setDepositAmount(e.target.value)} 
-                      placeholder="50"
-                      className="w-full bg-zinc-950 border border-zinc-800 focus:border-zinc-700/80 rounded-xl px-3 py-2 text-xs text-white font-mono outline-none"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-[10px] font-medium text-zinc-500 mb-1">Transfer Gateway</label>
-                    <select
-                      value={depositMethod}
-                      onChange={(e) => setDepositMethod(e.target.value)}
-                      className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-2.5 py-2 text-xs text-white outline-none"
-                    >
-                      <option value="USDT (TRC20)">USDT (TRC20)</option>
-                      <option value="Bank Wire">Domestic Bank Wire</option>
-                      <option value="USDT (ERC20)">USDT (ERC20)</option>
-                    </select>
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-[10px] font-medium text-zinc-500 mb-1">Verification TXID / Transfer Reference</label>
-                  <input 
-                    type="text" 
-                    required 
-                    value={depositTxid} 
-                    onChange={(e) => setDepositTxid(e.target.value)} 
-                    placeholder="e.g. TRx827hHksadU7s6vB"
-                    className="w-full bg-zinc-950 border border-zinc-800 focus:border-zinc-700/80 rounded-xl px-3 py-2 text-xs text-white font-mono outline-none"
-                  />
-                  <p className="text-[8px] text-zinc-500 mt-1 pl-1">
-                    Provide the clear transaction hash generated from your crypto wallet or bank payload.
-                  </p>
-                </div>
-
-                <button
-                  type="submit"
-                  disabled={actionLoading}
-                  className="w-full bg-white text-zinc-950 hover:bg-zinc-200 font-bold font-mono text-xs py-2.5 rounded-xl transition-all shadow-md active:scale-98 cursor-pointer disabled:opacity-50"
-                >
-                  {actionLoading ? "SUBMITTING REFERENCE..." : "SUBMIT AUDITING REQUEST"}
-                </button>
-              </form>
-            </div>
-
-            {/* INTEGRATED WITHDRAW MODULE (Minimum: $5, Maximum: $300, minus 18% GST deducted from balance!) */}
-            <div className="bg-zinc-900 border border-zinc-800 rounded-[1.5rem] p-5 space-y-4 shadow-xl">
-              <div className="space-y-1">
-                <span className="text-[10px] font-mono font-bold tracking-widest text-emerald-400 uppercase block font-bold">Secure Payout Portal</span>
-                <h3 className="text-lg font-bold font-display text-white">Request Digital Withdrawal</h3>
-                <p className="text-xs text-zinc-400 leading-relaxed">
-                  Convert compounding asset dividends to raw capital. Limit: <span className="font-mono text-white">$5.00</span> - <span className="font-mono text-white">$300.00</span> per transaction.
-                </p>
-                <div className="p-3 bg-zinc-950 border border-zinc-850 rounded-xl text-xs font-mono space-y-1 text-zinc-400">
-                  <p className="text-[11px] text-white font-sans font-bold flex items-center gap-1">
-                    <Info className="w-3.5 h-3.5 text-amber-500 shrink-0" />
-                    Regulatory Mandate — GST Audit Rule
-                  </p>
-                  <p className="text-[10px] text-zinc-500 leading-relaxed">
-                    According to jurisdictional compliance regulations, approved withdrawals deduct the base amount request <strong className="text-white">+ 18% GST</strong> directly from your pool card balance. For example: To withdraw $100.00, your available capital must reflect at least $118.00 in verified funds.
-                  </p>
-                </div>
-              </div>
-
-              {/* ACTION WITHDRAW INPUT FORM */}
-              <form onSubmit={handleWithdrawSubmit} className="space-y-3 font-sans">
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="block text-[10px] font-medium text-zinc-500 mb-1">Base Amount to Cashout</label>
-                    <input 
-                      type="number" 
-                      required 
-                      min="5" 
-                      max="300"
-                      value={withdrawAmount} 
-                      onChange={(e) => setWithdrawAmount(e.target.value)} 
-                      placeholder="100"
-                      className="w-full bg-zinc-950 border border-zinc-800 focus:border-zinc-700/80 rounded-xl px-3 py-2 text-xs text-white font-mono outline-none"
-                    />
-                  </div>
-
-                  <div>
-                    <span className="block text-[10px] font-medium text-zinc-500 mb-1">Deducted from Balance</span>
-                    <div className="bg-zinc-950 border border-zinc-850 rounded-xl px-3 py-2 text-xs font-bold font-mono text-rose-400">
-                      {formatCurrency(parseFloat(withdrawAmount || "0") * 1.18)} 
-                      <span className="text-[8px] font-normal text-zinc-500 ml-1">(inc 18% GST)</span>
-                    </div>
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-[10px] font-medium text-zinc-500 mb-1">Your Receiving Payout Details</label>
-                  <input 
-                    type="text" 
-                    required 
-                    value={withdrawalPaymentDetails} 
-                    onChange={(e) => setWithdrawalPaymentDetails(e.target.value)} 
-                    placeholder="TRC20 Wallet Address or Bank Account info"
-                    className="w-full bg-zinc-950 border border-zinc-800 focus:border-zinc-700/80 rounded-xl px-3 py-2 text-xs text-white font-mono outline-none"
-                  />
-                  <p className="text-[8px] text-zinc-500 mt-1 pl-1">
-                    Ensure exact alphanumeric accuracy to prevent complete non-reversible capital transmission loss.
-                  </p>
-                </div>
-
-                <button
-                  type="submit"
-                  disabled={actionLoading}
-                  className="w-full bg-white text-zinc-950 hover:bg-zinc-200 font-bold font-mono text-xs py-2.5 rounded-xl transition-all shadow-md active:scale-98 cursor-pointer disabled:opacity-50"
-                >
-                  {actionLoading ? "QUEUING TRANSFER..." : "AUTHORIZE CASHOUT DISBURSEMENT"}
-                </button>
-              </form>
-            </div>
-
-            {/* TRANSACTIONS AUDITING DIRECTORY */}
-            <div className="md:col-span-2 bg-zinc-900 border border-zinc-800 rounded-[1.5rem] p-5">
-              <h3 className="text-sm font-bold tracking-tight uppercase font-mono text-white mb-3">
-                Your Financial Auditing History logs
-              </h3>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                
-                {/* DEPOSITS LISTING */}
-                <div className="space-y-2">
-                  <span className="text-[10px] font-mono text-zinc-500 tracking-wide uppercase font-semibold">Deposit Claims ({deposits.length})</span>
-                  {deposits.length === 0 ? (
-                    <div className="bg-zinc-950/40 p-6 border border-zinc-850/40 text-center text-zinc-650 font-mono text-[11px] rounded-xl">
-                      No deposit records identified.
-                    </div>
-                  ) : (
-                    <div className="space-y-1.5 max-h-[250px] overflow-y-auto">
-                      {deposits.map((item) => (
-                        <div key={item.id} className="bg-zinc-950 p-2.5 border border-zinc-900 rounded-xl text-[10px] font-mono flex justify-between items-center gap-2">
-                          <div>
-                            <span className="text-white block font-semibold">{formatCurrency(item.amount)}</span>
-                            <span className="text-zinc-600 block text-[9px]">ID: {item.id} | TXID: {item.txid}</span>
-                            {item.adminReason && (
-                              <span className="block text-rose-400 text-[9px] mt-1 bg-rose-950/20 border border-rose-900/30 p-1 rounded font-sans">
-                                ⚠️ Reject Code: "{item.adminReason}"
-                              </span>
-                            )}
-                          </div>
-                          
-                          <div className="text-right">
-                            <span className="text-[9px] text-zinc-500 block">{formatDate(item.createdAt)}</span>
-                            <span className={`inline-block px-1.5 py-0.5 rounded text-[8px] font-bold ${
-                              item.status === 'approved' ? "bg-emerald-950 text-emerald-400" :
-                              item.status === 'rejected' ? "bg-rose-950 text-rose-400" :
-                              "bg-zinc-900 text-zinc-400"
-                            }`}>
-                              {item.status.toUpperCase()}
-                            </span>
+                      
+                      <div className="space-y-1.5 font-mono text-xs">
+                        <div>
+                          <span className="text-[10px] text-zinc-500 font-sans block">Escrow Wallet Address:</span>
+                          <div className="flex gap-2 items-center">
+                            <span className="text-[11px] text-white break-all bg-zinc-900/40 p-1.5 rounded">{adminSettings.paymentDetails.usdtAddress}</span>
+                            <button 
+                              type="button"
+                              onClick={() => {
+                                navigator.clipboard.writeText(adminSettings.paymentDetails.usdtAddress);
+                                alert("USDT Address saved to clipboard.");
+                              }}
+                              className="p-1.5 bg-zinc-900 hover:bg-zinc-850 font-mono text-xs text-zinc-400 hover:text-white rounded-lg cursor-pointer shrink-0 border border-zinc-800"
+                            >
+                              Copy
+                            </button>
                           </div>
                         </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
 
-                {/* WITHDRAWALS LISTING */}
-                <div className="space-y-2">
-                  <span className="text-[10px] font-mono text-zinc-500 tracking-wide uppercase font-semibold">Withdrawal Disbursals ({withdrawals.length})</span>
-                  {withdrawals.length === 0 ? (
-                    <div className="bg-zinc-950/40 p-6 border border-zinc-850/40 text-center text-zinc-650 font-mono text-[11px] rounded-xl">
-                      No withdrawal records identified.
+                        <div className="pt-2 border-t border-zinc-900">
+                          <span className="text-[10px] text-zinc-500 font-sans block mb-1">Domestic Fiat Route:</span>
+                          <div className="space-y-1 text-zinc-300 text-xs">
+                            <p><span className="text-zinc-500 font-sans">Bank:</span> {adminSettings.paymentDetails.bankName}</p>
+                            <p><span className="text-zinc-500 font-sans">A/C:</span> {adminSettings.paymentDetails.accountNumber}</p>
+                            <p><span className="text-zinc-500 font-sans">Name:</span> {adminSettings.paymentDetails.accountName}</p>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="pt-2 border-t border-zinc-900 text-[10px] text-zinc-500 italic bg-zinc-900/20 p-2.5 rounded-lg border border-dashed border-zinc-850">
+                        <span className="text-zinc-400 font-sans font-bold block mb-0.5">Compliance Instructions:</span>
+                        {adminSettings.paymentDetails.instructions}
+                      </div>
                     </div>
                   ) : (
-                    <div className="space-y-1.5 max-h-[250px] overflow-y-auto">
-                      {withdrawals.map((item) => (
-                        <div key={item.id} className="bg-zinc-950 p-2.5 border border-zinc-900 rounded-xl text-[10px] font-mono flex justify-between items-center gap-2">
+                    <div className="bg-zinc-950 p-4 rounded-xl text-center text-xs font-mono text-zinc-600">
+                      Retrieving financial instruction sets...
+                    </div>
+                  )}
+
+                  {/* ACTION INPUT FORM */}
+                  <form onSubmit={handleDepositSubmit} className="space-y-3 font-sans">
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-[10px] font-medium text-zinc-500 mb-1">Drawn Amount ($)</label>
+                        <input 
+                          type="number" 
+                          required 
+                          min="5" 
+                          max="300"
+                          value={depositAmount} 
+                          onChange={(e) => setDepositAmount(e.target.value)} 
+                          placeholder="50"
+                          className="w-full bg-zinc-950 border border-zinc-800 focus:border-zinc-700/80 rounded-xl px-3 py-2 text-xs text-white font-mono outline-none"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[10px] font-medium text-zinc-500 mb-1">Transfer Gateway</label>
+                        <select
+                          value={depositMethod}
+                          onChange={(e) => setDepositMethod(e.target.value)}
+                          className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-2.5 py-2 text-xs text-white outline-none"
+                        >
+                          <option value="USDT (TRC20)">USDT (TRC20)</option>
+                          <option value="Bank Wire">Domestic Bank Wire</option>
+                          <option value="USDT (ERC20)">USDT (ERC20)</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-[10px] font-medium text-zinc-500 mb-1">Verification TXID / Transfer Reference</label>
+                      <input 
+                        type="text" 
+                        required 
+                        value={depositTxid} 
+                        onChange={(e) => setDepositTxid(e.target.value)} 
+                        placeholder="e.g. TRx827hHksadU7s6vB"
+                        className="w-full bg-zinc-950 border border-zinc-800 focus:border-zinc-700/80 rounded-xl px-3 py-2 text-xs text-white font-mono outline-none"
+                      />
+                      <p className="text-[8px] text-zinc-500 mt-1 pl-1">
+                        Provide the clear transaction hash generated from your crypto wallet or bank payload.
+                      </p>
+                    </div>
+
+                    <button
+                      type="submit"
+                      disabled={actionLoading}
+                      className="w-full bg-white text-zinc-950 hover:bg-zinc-200 font-bold font-mono text-xs py-2.5 rounded-xl transition-all shadow-md active:scale-98 cursor-pointer disabled:opacity-50"
+                    >
+                      {actionLoading ? "SUBMITTING REFERENCE..." : "SUBMIT AUDITING REQUEST"}
+                    </button>
+                  </form>
+                </div>
+
+                {/* DEPOSIT CLAIMS LISTING IN SEPARATED BLOCK */}
+                <div className="bg-zinc-900 border border-zinc-800 rounded-[1.5rem] p-5">
+                  <h3 className="text-xs font-bold uppercase tracking-widest font-mono text-zinc-400 mb-3 block">
+                    Deposit Claims Auditing Logs ({deposits.length})
+                  </h3>
+                  {deposits.length === 0 ? (
+                    <div className="bg-zinc-950/40 p-6 border border-zinc-850/40 text-center text-zinc-500 font-mono text-[11px] rounded-xl">
+                      No deposit records identified for this profile.
+                    </div>
+                  ) : (
+                    <div className="space-y-1.5 max-h-[300px] overflow-y-auto">
+                      {deposits.map((item) => (
+                        <div key={item.id} className="bg-zinc-950 p-3 border border-zinc-900 rounded-xl text-[11px] font-mono flex justify-between items-center gap-2">
                           <div>
-                            <div className="flex items-center gap-1.5 text-white">
-                              <span className="font-semibold">{formatCurrency(item.amount)}</span>
-                              <span className="text-[9px] text-rose-400">({formatCurrency(item.deductedAmount)} deducted)</span>
-                            </div>
-                            <span className="text-zinc-650 block text-[9px] truncate max-w-[170px]">Addr: {item.paymentDetails}</span>
+                            <span className="text-white block font-bold text-xs">{formatCurrency(item.amount)}</span>
+                            <span className="text-zinc-500 block text-[9px]">ID: {item.id} | TXID: {item.txid}</span>
                             {item.adminReason && (
-                              <span className="block text-rose-400 text-[9px] mt-1 bg-rose-950/20 border border-rose-900/30 p-1 rounded font-sans">
+                              <span className="block text-rose-400 text-[9px] mt-1.5 bg-rose-950/20 border border-rose-900/30 p-1 rounded font-sans">
                                 ⚠️ Reject Code: "{item.adminReason}"
                               </span>
                             )}
                           </div>
                           
                           <div className="text-right shrink-0">
-                            <span className="text-[9px] text-zinc-500 block">{formatDate(item.createdAt)}</span>
-                            <span className={`inline-block px-1.5 py-0.5 rounded text-[8px] font-bold ${
+                            <span className="text-[10px] text-zinc-500 block mb-0.5">{formatDate(item.createdAt)}</span>
+                            <span className={`inline-block px-2 py-0.5 rounded text-[8px] font-bold tracking-wider ${
                               item.status === 'approved' ? "bg-emerald-950 text-emerald-400" :
                               item.status === 'rejected' ? "bg-rose-950 text-rose-400" :
                               "bg-zinc-900 text-zinc-400"
@@ -1179,9 +1197,124 @@ export default function App() {
                     </div>
                   )}
                 </div>
-
               </div>
-            </div>
+            )}
+
+            {financialSubTab === "withdraw" && (
+              <div className="space-y-6">
+                {/* INTEGRATED WITHDRAW MODULE (Minimum: $5, Maximum: $300, minus 18% GST deducted from balance!) */}
+                <div className="bg-zinc-900 border border-zinc-800 rounded-[1.5rem] p-5 space-y-4 shadow-xl">
+                  <div className="space-y-1">
+                    <span className="text-[10px] font-mono font-bold tracking-widest text-emerald-400 uppercase block">Secure Payout Portal</span>
+                    <h3 className="text-lg font-bold font-display text-white">Request Digital Withdrawal</h3>
+                    <p className="text-xs text-zinc-400 leading-relaxed">
+                      Convert compounding asset dividends to raw capital. Limit: <span className="font-mono text-white">$5.00</span> - <span className="font-mono text-white">$300.00</span> per transaction.
+                    </p>
+                    <div className="p-3 bg-zinc-950 border border-zinc-850 rounded-xl text-xs font-mono space-y-1 text-zinc-400">
+                      <p className="text-[11px] text-white font-sans font-bold flex items-center gap-1">
+                        <Info className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+                        Regulatory Mandate — GST Audit Rule
+                      </p>
+                      <p className="text-[10px] text-zinc-500 leading-relaxed">
+                        According to jurisdictional compliance regulations, approved withdrawals deduct the base amount request <strong className="text-white">+ 18% GST</strong> directly from your pool card balance. For example: To withdraw $100.00, your available capital must reflect at least $118.00 in verified funds.
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* ACTION WITHDRAW INPUT FORM */}
+                  <form onSubmit={handleWithdrawSubmit} className="space-y-3 font-sans">
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-[10px] font-medium text-zinc-500 mb-1">Base Amount to Cashout</label>
+                        <input 
+                          type="number" 
+                          required 
+                          min="5" 
+                          max="300"
+                          value={withdrawAmount} 
+                          onChange={(e) => setWithdrawAmount(e.target.value)} 
+                          placeholder="100"
+                          className="w-full bg-zinc-950 border border-zinc-800 focus:border-zinc-700/80 rounded-xl px-3 py-2 text-xs text-white font-mono outline-none"
+                        />
+                      </div>
+
+                      <div>
+                        <span className="block text-[10px] font-medium text-zinc-500 mb-1">Deducted from Balance</span>
+                        <div className="bg-zinc-950 border border-zinc-850 rounded-xl px-3 py-2 text-xs font-bold font-mono text-rose-400">
+                          {formatCurrency(parseFloat(withdrawAmount || "0") * 1.18)} 
+                          <span className="text-[8px] font-normal text-zinc-500 ml-1">(inc 18% GST)</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-[10px] font-medium text-zinc-500 mb-1">Your Receiving Payout Details</label>
+                      <input 
+                        type="text" 
+                        required 
+                        value={withdrawalPaymentDetails} 
+                        onChange={(e) => setWithdrawalPaymentDetails(e.target.value)} 
+                        placeholder="TRC20 Wallet Address or Bank Account info"
+                        className="w-full bg-zinc-950 border border-zinc-800 focus:border-zinc-700/80 rounded-xl px-3 py-2 text-xs text-white font-mono outline-none"
+                      />
+                      <p className="text-[8px] text-zinc-500 mt-1 pl-1">
+                        Ensure exact alphanumeric accuracy to prevent complete non-reversible capital transmission loss.
+                      </p>
+                    </div>
+
+                    <button
+                      type="submit"
+                      disabled={actionLoading}
+                      className="w-full bg-white text-zinc-950 hover:bg-zinc-200 font-bold font-mono text-xs py-2.5 rounded-xl transition-all shadow-md active:scale-98 cursor-pointer disabled:opacity-50"
+                    >
+                      {actionLoading ? "QUEUING TRANSFER..." : "AUTHORIZE CASHOUT DISBURSEMENT"}
+                    </button>
+                  </form>
+                </div>
+
+                {/* WITHDRAWAL DISBURSALS LISTING IN SEPARATED BLOCK */}
+                <div className="bg-zinc-900 border border-zinc-800 rounded-[1.5rem] p-5">
+                  <h3 className="text-xs font-bold uppercase tracking-widest font-mono text-zinc-400 mb-3 block">
+                    Withdrawal Disbursals Auditing Logs ({withdrawals.length})
+                  </h3>
+                  {withdrawals.length === 0 ? (
+                    <div className="bg-zinc-950/40 p-6 border border-zinc-850/40 text-center text-zinc-500 font-mono text-[11px] rounded-xl">
+                      No withdrawal records identified for this profile.
+                    </div>
+                  ) : (
+                    <div className="space-y-1.5 max-h-[300px] overflow-y-auto">
+                      {withdrawals.map((item) => (
+                        <div key={item.id} className="bg-zinc-950 p-3 border border-zinc-900 rounded-xl text-[11px] font-mono flex justify-between items-center gap-2">
+                          <div>
+                            <div className="flex items-center gap-1.5 text-white">
+                              <span className="font-bold text-xs">{formatCurrency(item.amount)}</span>
+                              <span className="text-[9px] text-rose-400">({formatCurrency(item.deductedAmount)} deducted)</span>
+                            </div>
+                            <span className="text-zinc-550 block text-[9px] truncate max-w-[210px] mt-0.5">Addr: {item.paymentDetails}</span>
+                            {item.adminReason && (
+                              <span className="block text-rose-400 text-[9px] mt-1.5 bg-rose-950/20 border border-rose-900/30 p-1 rounded font-sans">
+                                ⚠️ Reject Code: "{item.adminReason}"
+                              </span>
+                            )}
+                          </div>
+                          
+                          <div className="text-right shrink-0">
+                            <span className="text-[10px] text-zinc-500 block mb-0.5">{formatDate(item.createdAt)}</span>
+                            <span className={`inline-block px-2 py-0.5 rounded text-[8px] font-bold tracking-wider ${
+                              item.status === 'approved' ? "bg-emerald-950 text-emerald-400" :
+                              item.status === 'rejected' ? "bg-rose-950 text-rose-400" :
+                              "bg-zinc-900 text-zinc-400"
+                            }`}>
+                              {item.status.toUpperCase()}
+                            </span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
 
           </div>
         )}

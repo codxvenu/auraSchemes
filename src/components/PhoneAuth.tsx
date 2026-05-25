@@ -25,12 +25,14 @@ export default function PhoneAuth({ onAuthSuccess }: PhoneAuthProps) {
   // Read URL query parameters
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    const ref = params.get("ref");
+    const ref = params.get("ref") || params.get("referral");
     if (ref) {
       setReferralCode(ref.toUpperCase());
       setIsReferralReadOnly(true);
       setIsLogin(false); // Direct user to Register screen
       setSuccess(`Referral code "${ref}" identified & locked! Fill out credentials below.`);
+    } else {
+      setIsReferralReadOnly(true);
     }
   }, []);
 
@@ -246,15 +248,10 @@ export default function PhoneAuth({ onAuthSuccess }: PhoneAuthProps) {
                   type="text"
                   required
                   id="auth-ref-code"
-                  disabled={isReferralReadOnly}
+                  readOnly={true}
                   value={referralCode}
-                  onChange={(e) => setReferralCode(e.target.value)}
-                  placeholder="AURA"
-                  className={`w-full bg-zinc-950 border rounded-xl py-2.5 pl-10 pr-4 text-sm font-mono text-white placeholder-zinc-600 outline-none transition-colors ${
-                    isReferralReadOnly 
-                      ? "border-emerald-900 bg-emerald-950/10 text-emerald-300 font-semibold cursor-not-allowed opacity-80" 
-                      : "border-zinc-800 hover:border-zinc-700/80 focus:border-zinc-600"
-                  }`}
+                  placeholder=""
+                  className="w-full bg-emerald-950/10 border border-emerald-900/40 text-emerald-300 font-semibold rounded-xl py-2.5 pl-10 pr-4 text-sm font-mono cursor-not-allowed opacity-80 outline-none"
                 />
               </div>
               <p className="text-[10px] text-zinc-500 mt-1">
