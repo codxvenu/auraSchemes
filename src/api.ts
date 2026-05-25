@@ -165,11 +165,9 @@ export const auraApi = {
 // Utilities for cleaner human display metrics
 export function formatCurrency(amount: number): string {
   return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  }).format(amount);
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(amount) + " Dinars";
 }
 
 export function formatDate(isoStr: string): string {

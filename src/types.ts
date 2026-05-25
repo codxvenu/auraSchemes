@@ -6,6 +6,7 @@ export interface User {
   balance: number;      // in dollars ($)
   role: 'user' | 'admin';
   createdAt: string;
+  spins?: number;       // available free spin counts
 }
 
 export interface InvestmentProduct {

@@ -29,13 +29,13 @@ import {
 } from "lucide-react";
 
 const SECTORS = [
-  { backendLabel: "5000 IDR Prize Value", label: "5,000 IDR", icon: "💵", color: "#10b981", rgb: "16, 185, 129" },
-  { backendLabel: "10000 IDR grand Prize", label: "10,000 IDR", icon: "💰", color: "#f59e0b", rgb: "245, 158, 11" },
-  { backendLabel: "Iphone 17", label: "iPhone 17", icon: "📱", color: "#3b82f6", rgb: "59, 130, 246" },
-  { backendLabel: "600k IDR", label: "600k IDR", icon: "💸", color: "#ec4899", rgb: "236, 72, 153" },
-  { backendLabel: "Playstation", label: "Playstation", icon: "🎮", color: "#8b5cf6", rgb: "139, 92, 246" },
-  { backendLabel: "Refrigerator", label: "Refrigerator", icon: "❄️", color: "#06b6d4", rgb: "6, 182, 212" },
-  { backendLabel: "AC", label: "Air Cond.", icon: "💨", color: "#6b7280", rgb: "107, 114, 128" }
+  { backendLabel: "5000 IDR Prize Value", label: "5,000 Dinars (90% win)", icon: "💵", color: "#10b981", rgb: "16, 185, 129" },
+  { backendLabel: "10000 IDR grand Prize", label: "10,000 Dinars (5% win)", icon: "💰", color: "#f59e0b", rgb: "245, 158, 11" },
+  { backendLabel: "Iphone 17", label: "iPhone 17 (1% win)", icon: "📱", color: "#3b82f6", rgb: "59, 130, 246" },
+  { backendLabel: "600k IDR", label: "600k Dinars (1% win)", icon: "💸", color: "#ec4899", rgb: "236, 72, 153" },
+  { backendLabel: "Playstation", label: "Playstation (1% win)", icon: "🎮", color: "#8b5cf6", rgb: "139, 92, 246" },
+  { backendLabel: "Better luck next time", label: "Better luck next time (1% win)", icon: "✨", color: "#06b6d4", rgb: "6, 182, 212" },
+  { backendLabel: "AC", label: "Air Cond. (1% win)", icon: "💨", color: "#6b7280", rgb: "107, 114, 128" }
 ];
 
 export default function App() {
@@ -360,8 +360,8 @@ export default function App() {
     setProfileError(null);
 
     const amount = parseFloat(withdrawAmount);
-    if (isNaN(amount) || amount < 5 || amount > 300) {
-      setProfileError("Withdrawal amount must reside strictly between $5.00 and $300.00.");
+    if (isNaN(amount) || amount < 5000 || amount > 30000) {
+      setProfileError("Withdrawal amount must reside strictly between 5,000 and 30,000 Dinars.");
       setActionLoading(false);
       return;
     }
@@ -813,18 +813,18 @@ export default function App() {
 
                       {/* Display center chip overlay - remains static inside the central gold circle */}
                       <div className="absolute z-10 bg-[#09090b]/90 border border-zinc-800 w-16 h-16 rounded-full flex flex-col items-center justify-center shadow-inner font-bold font-mono text-[10px] text-zinc-300">
-                        <span className="text-[8px] text-zinc-500 uppercase tracking-widest block scale-90 mb-0.5">COST</span>
-                        <span className="text-white text-[11px] font-extrabold">$2.00</span>
+                        <span className="text-[8px] text-zinc-500 uppercase tracking-widest block scale-90 mb-0.5">SPINS</span>
+                        <span className="text-emerald-400 text-xs font-extrabold">{user?.spins ?? 0}</span>
                       </div>
                     </div>
 
                     <button
                       onClick={handleSpinLuckyWheel}
-                      disabled={isSpinning || user.balance < 2}
+                      disabled={isSpinning || (user?.spins ?? 0) < 1}
                       id="btn-spin-wheel"
                       className="mt-5 px-8 py-3 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 text-white text-xs font-mono font-bold tracking-widest uppercase rounded-xl transition-all shadow-[0_4px_12px_rgba(16,185,129,0.3)] hover:shadow-[0_6px_20px_rgba(16,185,129,0.4)] active:scale-95 text-center cursor-pointer disabled:opacity-30 disabled:pointer-events-none"
                     >
-                      {isSpinning ? "🎰 SPINNING..." : "⚡ SPIN LUCKY WHEEL"}
+                      {isSpinning ? "🎰 SPINNING..." : `⚡ FREE SPIN NOW (${user?.spins ?? 0} LEFT)`}
                     </button>
 
                     {spinError && (
@@ -1053,7 +1053,7 @@ export default function App() {
                     <span className="text-[10px] font-mono font-bold tracking-widest text-emerald-400 uppercase block">Capital Refunding Desk</span>
                     <h3 className="text-lg font-bold font-display text-white">Deposit Secure Assets</h3>
                     <p className="text-xs text-zinc-400 leading-relaxed">
-                      Refuel your capital pool balance instantly. Minimum: <span className="font-mono text-white">$5.00</span>, Maximum: <span className="font-mono text-white">$300.00</span>. Review escrow details provided below, make transfer, and submit Transaction Hash details to the audit board.
+                      Refuel your capital pool balance instantly. Minimum: <span className="font-mono text-white">1,500 Dinars</span>, Maximum: <span className="font-mono text-white">100,000 Dinars</span>. Review escrow details provided below, make transfer, and submit Transaction Hash details to the audit board.
                     </p>
                   </div>
 
@@ -1108,15 +1108,15 @@ export default function App() {
                   <form onSubmit={handleDepositSubmit} className="space-y-3 font-sans">
                     <div className="grid grid-cols-2 gap-3">
                       <div>
-                        <label className="block text-[10px] font-medium text-zinc-500 mb-1">Drawn Amount ($)</label>
+                        <label className="block text-[10px] font-medium text-zinc-500 mb-1">Drawn Amount (Dinars)</label>
                         <input 
                           type="number" 
                           required 
-                          min="5" 
-                          max="300"
+                          min="1500" 
+                          max="100000"
                           value={depositAmount} 
                           onChange={(e) => setDepositAmount(e.target.value)} 
-                          placeholder="50"
+                          placeholder="5000"
                           className="w-full bg-zinc-950 border border-zinc-800 focus:border-zinc-700/80 rounded-xl px-3 py-2 text-xs text-white font-mono outline-none"
                         />
                       </div>
@@ -1202,13 +1202,13 @@ export default function App() {
 
             {financialSubTab === "withdraw" && (
               <div className="space-y-6">
-                {/* INTEGRATED WITHDRAW MODULE (Minimum: $5, Maximum: $300, minus 18% GST deducted from balance!) */}
+                {/* INTEGRATED WITHDRAW MODULE (Minimum: 5,000, Maximum: 30,000, minus 18% GST deducted from balance!) */}
                 <div className="bg-zinc-900 border border-zinc-800 rounded-[1.5rem] p-5 space-y-4 shadow-xl">
                   <div className="space-y-1">
                     <span className="text-[10px] font-mono font-bold tracking-widest text-emerald-400 uppercase block">Secure Payout Portal</span>
                     <h3 className="text-lg font-bold font-display text-white">Request Digital Withdrawal</h3>
                     <p className="text-xs text-zinc-400 leading-relaxed">
-                      Convert compounding asset dividends to raw capital. Limit: <span className="font-mono text-white">$5.00</span> - <span className="font-mono text-white">$300.00</span> per transaction.
+                      Convert compounding asset dividends to raw capital. Limit: <span className="font-mono text-white">5,000 Dinars</span> - <span className="font-mono text-white">30,000 Dinars</span> per transaction.
                     </p>
                     <div className="p-3 bg-zinc-950 border border-zinc-850 rounded-xl text-xs font-mono space-y-1 text-zinc-400">
                       <p className="text-[11px] text-white font-sans font-bold flex items-center gap-1">
@@ -1216,7 +1216,7 @@ export default function App() {
                         Regulatory Mandate — GST Audit Rule
                       </p>
                       <p className="text-[10px] text-zinc-500 leading-relaxed">
-                        According to jurisdictional compliance regulations, approved withdrawals deduct the base amount request <strong className="text-white">+ 18% GST</strong> directly from your pool card balance. For example: To withdraw $100.00, your available capital must reflect at least $118.00 in verified funds.
+                        According to jurisdictional compliance regulations, approved withdrawals deduct the base amount request <strong className="text-white">+ 18% GST</strong> directly from your pool card balance. For example: To withdraw 10,000 Dinars, your available capital must reflect at least 11,800 Dinars in verified funds.
                       </p>
                     </div>
                   </div>
@@ -1229,11 +1229,11 @@ export default function App() {
                         <input 
                           type="number" 
                           required 
-                          min="5" 
-                          max="300"
+                          min="5000" 
+                          max="30000"
                           value={withdrawAmount} 
                           onChange={(e) => setWithdrawAmount(e.target.value)} 
-                          placeholder="100"
+                          placeholder="10000"
                           className="w-full bg-zinc-950 border border-zinc-800 focus:border-zinc-700/80 rounded-xl px-3 py-2 text-xs text-white font-mono outline-none"
                         />
                       </div>

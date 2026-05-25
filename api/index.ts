@@ -56,8 +56,8 @@ function seedDatabase() {
       {
         id: "prod-basic",
         name: "Aura Micro-Bond Key",
-        price: 15,
-        dailyEarning: 0.9,
+        price: 1500,
+        dailyEarning: 90,
         durationDays: 30,
         category: "deposit",
         icon: "🔌",
@@ -67,8 +67,8 @@ function seedDatabase() {
       {
         id: "prod-silver",
         name: "Slate High-Yield Node",
-        price: 50,
-        dailyEarning: 3.5,
+        price: 5000,
+        dailyEarning: 350,
         durationDays: 30,
         category: "deposit",
         icon: "⚡",
@@ -78,8 +78,8 @@ function seedDatabase() {
       {
         id: "prod-gold",
         name: "Emerald VIP Liquidity Pool",
-        price: 150,
-        dailyEarning: 12.0,
+        price: 15000,
+        dailyEarning: 1200,
         durationDays: 30,
         category: "vip-plan",
         icon: "📈",
@@ -89,8 +89,8 @@ function seedDatabase() {
       {
         id: "prod-diamond",
         name: "Cosmic Apex Arbitrage Voucher",
-        price: 300,
-        dailyEarning: 32.0,
+        price: 30000,
+        dailyEarning: 3200,
         durationDays: 20,
         category: "vip-plan",
         icon: "💎",
@@ -247,10 +247,11 @@ app.post("/api/auth/register", (req, res) => {
   }
 
   // Validate referrer exists
-  const referrer = db.users.find(u => u.referralCode.toUpperCase() === referralCode.toUpperCase());
-  if (!referrer) {
+  const referrerIndex = db.users.findIndex(u => u.referralCode.toUpperCase() === referralCode.toUpperCase());
+  if (referrerIndex === -1) {
     return res.status(400).json({ error: "Registration blocked! The referral code entered is invalid." });
   }
+  const referrer = db.users[referrerIndex];
 
   // Check if double phone
   const existingUser = db.users.find(u => u.phone === phone);
@@ -261,15 +262,16 @@ app.post("/api/auth/register", (req, res) => {
   // Generate unique referral code for the new user
   const ownRefCode = "AURA-" + Math.floor(1000 + Math.random() * 9000);
 
-  // Default initial sign-up balance
+  // Default initial sign-up balance (e.g., 10,000 Dinars as starting signup reward)
   const newUser: User = {
     phone,
     username,
     referralCode: ownRefCode,
     referredBy: referrer.referralCode,
-    balance: 10, // Generous starting balance
+    balance: 10000, 
     role: 'user',
-    createdAt: new Date().toISOString()
+    createdAt: new Date().toISOString(),
+    spins: 1 // Start with exactly 1 free spin!
   };
 
   db.users.push(newUser);
@@ -300,8 +302,14 @@ app.post("/api/auth/login", (req, res) => {
     return res.status(400).json({ error: "Invalid phone number or password." });
   }
 
+  // Support initializing spins count on first login to exactly 1
+  if (typeof user.spins !== 'number') {
+    user.spins = 1;
+  }
+
   // Complete reward updates
   tickUserInvestments(phone);
+  saveDatabase();
 
   const token = "TOKEN_" + phone + "_" + Date.now();
   sessions[token] = phone;
@@ -325,6 +333,10 @@ app.get("/api/auth/me", (req, res) => {
 
   // Return fresh copy of user details
   const freshUser = db.users.find(u => u.phone === user.phone);
+  if (freshUser && typeof freshUser.spins !== 'number') {
+    freshUser.spins = 1;
+    saveDatabase();
+  }
   res.json({ user: freshUser });
 });
 
@@ -409,8 +421,8 @@ app.post("/api/financial/withdraw", (req, res) => {
   const { amount, paymentDetails } = req.body;
   const parsedAmt = parseFloat(amount);
 
-  if (isNaN(parsedAmt) || parsedAmt < 5 || parsedAmt > 300) {
-    return res.status(400).json({ error: "Invalid withdrawal amount. Must be between $5 and $300." });
+  if (isNaN(parsedAmt) || parsedAmt < 5000 || parsedAmt > 30000) {
+    return res.status(400).json({ error: "Invalid withdrawal amount. Must be between 5,000 and 30,000 Dinars." });
   }
 
   if (!paymentDetails || paymentDetails.trim().length === 0) {
@@ -426,7 +438,7 @@ app.post("/api/financial/withdraw", (req, res) => {
 
   if (freshUser.balance < totalDeduction) {
     return res.status(400).json({ 
-      error: `Insufficient balance! To withdraw $${parsedAmt}, your account requires $${totalDeduction.toFixed(2)} (including 18% GST). Current Balance: $${freshUser.balance.toFixed(2)}` 
+      error: `Insufficient balance! To withdraw ${parsedAmt.toLocaleString()} Dinars, your account requires ${totalDeduction.toLocaleString()} Dinars (including 18% GST). Current Balance: ${freshUser.balance.toLocaleString()} Dinars.` 
     });
   }
 
@@ -445,7 +457,7 @@ app.post("/api/financial/withdraw", (req, res) => {
 
   res.json({ 
     success: true, 
-    message: `Withdrawal request submitted! Pending $${totalDeduction.toFixed(2)} authorization.`, 
+    message: `Withdrawal request submitted! Pending ${totalDeduction.toLocaleString()} Dinars authorization.`, 
     withdrawal: newWithdrawal 
   });
 });
@@ -514,34 +526,36 @@ app.post("/api/products/invest", (req, res) => {
 });
 
 // Interactive Category Mini-Game: Lucky Wheel Spin
-// Costs $2, yields various rewards back to balance!
+// Uses a free spin count instead of balance deduction, and adds won money directly to user balance!
 app.post("/api/mini-game/spin", (req, res) => {
   const user = getAuthenticatedUser(req);
   if (!user) return res.status(401).json({ error: "Unauthorized" });
-
-  const SPIN_COST = 2;
 
   // Check ticks
   tickUserInvestments(user.phone);
   const userIndex = db.users.findIndex(u => u.phone === user.phone);
   const freshUser = db.users[userIndex];
 
-  if (freshUser.balance < SPIN_COST) {
-    return res.status(400).json({ error: `Insufficient funds to spin. The Cosmic Lucky Wheel costs $2.00 per spin. Your Balance: $${freshUser.balance.toFixed(2)}` });
+  const currentSpins = typeof freshUser.spins === "number" ? freshUser.spins : 1;
+
+  if (currentSpins < 1) {
+    return res.status(400).json({ 
+      error: "You have 0 free spins left! Refer someone using your referral code to earn more free spins." 
+    });
   }
 
-  // Deduct Spin Cost
-  db.users[userIndex].balance -= SPIN_COST;
+  // Deduct 1 Spin
+  db.users[userIndex].spins = currentSpins - 1;
 
   // Spin yields: 
-  // 5000 IDR (99% chance), 10000 IDR (1% chance), others (0% chance)
+  // 50-50 chances for "Better luck next time" and "5000 IDR Prize Value" as requested
   const outcomes = [
-    { label: "5000 IDR Prize Value", prize: 0.35, weight: 99 },
-    { label: "10000 IDR grand Prize", prize: 0.70, weight: 1 },
+    { label: "5000 IDR Prize Value", prize: 5000, weight: 50 },
+    { label: "Better luck next time", prize: 0, weight: 50 },
+    { label: "10000 IDR grand Prize", prize: 0, weight: 0 },
     { label: "Iphone 17", prize: 0, weight: 0 },
     { label: "600k IDR", prize: 0, weight: 0 },
     { label: "Playstation", prize: 0, weight: 0 },
-    { label: "Refrigerator", prize: 0, weight: 0 },
     { label: "AC", prize: 0, weight: 0 }
   ];
 
@@ -558,7 +572,7 @@ app.post("/api/mini-game/spin", (req, res) => {
     random -= outcome.weight;
   }
 
-  // Credit prize
+  // Credit won money directly to the user's account balance
   db.users[userIndex].balance += selected.prize;
   saveDatabase();
 
@@ -566,9 +580,9 @@ app.post("/api/mini-game/spin", (req, res) => {
     success: true,
     outcome: selected.label,
     reward: selected.prize,
-    cost: SPIN_COST,
+    cost: 0,
     newBalance: db.users[userIndex].balance,
-    message: `Spun! You drew "${selected.label}" and received $${selected.prize.toFixed(2)}.`
+    message: `Spun successfully! You drew "${selected.label}" and received ${selected.prize} Dinars in your account.`
   });
 });
 
@@ -628,11 +642,13 @@ app.post("/api/admin/deposits/approve", verifyAdmin, (req, res) => {
   }
 
   // Credit amount and update status
+  const user = db.users[targetUserIndex];
+  const priorApprovedCount = db.deposits.filter(d => d.phone === user.phone && d.status === 'approved').length;
+
   deposit.status = 'approved';
   db.users[targetUserIndex].balance += deposit.amount;
 
   // Add 10% first deposit bonus to Sponsor if referral exists!
-  const user = db.users[targetUserIndex];
   if (user.referredBy) {
     const sponsorIndex = db.users.findIndex(u => u.referralCode === user.referredBy);
     if (sponsorIndex !== -1) {
@@ -640,6 +656,12 @@ app.post("/api/admin/deposits/approve", verifyAdmin, (req, res) => {
       const referralBonus = deposit.amount * 0.10;
       db.users[sponsorIndex].balance += referralBonus;
       console.log(`Referral commission of $${referralBonus} paid to Sponsor: ${db.users[sponsorIndex].phone}`);
+
+      // If this is the referred user's first approved deposit, award 1 free spin to their sponsor!
+      if (priorApprovedCount === 0) {
+        db.users[sponsorIndex].spins = (db.users[sponsorIndex].spins || 0) + 1;
+        console.log(`First deposit approved! Awarded 1 free spin to Sponsor: ${db.users[sponsorIndex].phone}`);
+      }
     }
   }
 
