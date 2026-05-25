@@ -154,6 +154,38 @@ export const auraApi = {
     });
   },
 
+  async addProduct(product: {
+    id: string;
+    name: string;
+    image: string;
+    price: number;
+    dailyIncome: number;
+    durationDays: number;
+    description: string;
+    purchaseLimit?: number;
+  }): Promise<{ success: boolean; message: string; product: InvestmentProduct }> {
+    return apiFetch<{ success: boolean; message: string; product: InvestmentProduct }>("/api/admin/products/add", {
+      method: "POST",
+      body: JSON.stringify(product)
+    });
+  },
+
+  async editProduct(productId: string, updates: {
+    name?: string;
+    image?: string;
+    price?: number;
+    dailyIncome?: number;
+    durationDays?: number;
+    description?: string;
+    status?: 'active' | 'inactive';
+    purchaseLimit?: number | null;
+  }): Promise<{ success: boolean; message: string; product: InvestmentProduct }> {
+    return apiFetch<{ success: boolean; message: string; product: InvestmentProduct }>("/api/admin/products/edit", {
+      method: "POST",
+      body: JSON.stringify({ productId, ...updates })
+    });
+  },
+
   async addNewsItem(title: string, content: string): Promise<{ success: boolean; item: ForumNews }> {
     return apiFetch<{ success: boolean; item: ForumNews }>("/api/admin/news/add", {
       method: "POST",
@@ -167,7 +199,7 @@ export function formatCurrency(amount: number): string {
   return new Intl.NumberFormat("en-US", {
     minimumFractionDigits: 0,
     maximumFractionDigits: 0,
-  }).format(amount) + " Dinars";
+  }).format(amount) + " IQD";
 }
 
 export function formatDate(isoStr: string): string {

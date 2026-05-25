@@ -51,50 +51,52 @@ let db: DatabaseSchema = {
 // Seed initial default products and admin
 function seedDatabase() {
   // Pre-seed core investment products
-  if (db.products.length === 0) {
+  const hasLegacyOrMissingNew = !db.products.some(p => p.id === "s1") || db.products.some(p => p.id === "prod-basic" || p.id === "S1");
+  if (hasLegacyOrMissingNew || db.products.length === 0) {
     db.products = [
       {
-        id: "prod-basic",
-        name: "Aura Micro-Bond Key",
-        price: 1500,
-        dailyEarning: 90,
-        durationDays: 30,
+        id: "s1",
+        name: "S1",
+        image: "https://lqcaso.com/ui7/pro/1.jpg",
+        price: 10000,
+        dailyIncome: 1000,
+        dailyEarning: 1000,
+        durationDays: 90,
+        totalIncome: 90000,
+        status: "active",
         category: "deposit",
-        icon: "🔌",
-        description: "Low-barrier entrance token. Yields steady Micro-Bond payouts daily.",
+        icon: "⌚",
+        description: "Starter investment package S1 featuring high quality catalog assets.",
         rating: 4.8
       },
       {
-        id: "prod-silver",
-        name: "Slate High-Yield Node",
-        price: 5000,
-        dailyEarning: 350,
-        durationDays: 30,
+        id: "s2",
+        name: "S2",
+        image: "https://lqcaso.com/ui7/pro/2.jpg",
+        price: 40000,
+        dailyIncome: 7300,
+        dailyEarning: 7300,
+        durationDays: 90,
+        totalIncome: 657000,
+        status: "active",
         category: "deposit",
         icon: "⚡",
-        description: "Standard node computing key in the Swiss Slate pool. Exceptional risk/reward.",
+        description: "Advanced investment package S2 with premium compound earnings model.",
         rating: 4.9
       },
       {
-        id: "prod-gold",
-        name: "Emerald VIP Liquidity Pool",
-        price: 15000,
-        dailyEarning: 1200,
-        durationDays: 30,
+        id: "s3",
+        name: "S3",
+        image: "https://lqcaso.com/ui7/pro/3.jpg",
+        price: 100000,
+        dailyIncome: 20700,
+        dailyEarning: 20700,
+        durationDays: 90,
+        totalIncome: 1863000,
+        status: "active",
         category: "vip-plan",
-        icon: "📈",
-        description: "Escrow-backed investment tier generating premium daily dividends.",
-        rating: 4.95
-      },
-      {
-        id: "prod-diamond",
-        name: "Cosmic Apex Arbitrage Voucher",
-        price: 30000,
-        dailyEarning: 3200,
-        durationDays: 20,
-        category: "vip-plan",
-        icon: "💎",
-        description: "Our highest yielding VIP license. Leveriges flash loans to produce massive daily payouts.",
+        icon: "👑",
+        description: "Pro VIP investment package S3 with maximum daily payout yields.",
         rating: 5.0
       }
     ];
@@ -262,13 +264,13 @@ app.post("/api/auth/register", (req, res) => {
   // Generate unique referral code for the new user
   const ownRefCode = "AURA-" + Math.floor(1000 + Math.random() * 9000);
 
-  // Default initial sign-up balance (e.g., 10,000 Dinars as starting signup reward)
+  // Default initial sign-up balance (0 Dinars as requested)
   const newUser: User = {
     phone,
     username,
     referralCode: ownRefCode,
     referredBy: referrer.referralCode,
-    balance: 10000, 
+    balance: 0, 
     role: 'user',
     createdAt: new Date().toISOString(),
     spins: 1 // Start with exactly 1 free spin!
@@ -484,7 +486,10 @@ app.post("/api/products/invest", (req, res) => {
   const { productId } = req.body;
   const product = db.products.find(p => p.id === productId);
 
-  if (!product) return res.status(400).json({ error: "Selected product node key not found" });
+  if (!product) return res.status(400).json({ error: "Selected product/package not found" });
+  if (product.status === "inactive") {
+    return res.status(400).json({ error: "This package is currently disabled by administration." });
+  }
 
   // Update ticks first
   tickUserInvestments(user.phone);
@@ -492,26 +497,38 @@ app.post("/api/products/invest", (req, res) => {
   const freshUser = db.users[userIndex];
 
   if (freshUser.balance < product.price) {
-    return res.status(400).json({ error: `Insufficient funds. Purchase cost is $${product.price}, your current balance is $${freshUser.balance.toFixed(2)}.` });
+    return res.status(400).json({ error: `Insufficient funds. Purchase price is ${product.price.toLocaleString()} Dinars, your current balance is ${freshUser.balance.toLocaleString()} Dinars.` });
   }
 
   // Deduct
   db.users[userIndex].balance -= product.price;
 
-  // Add Investment node
+  // Add Investment node with User Purchases Collection Schema
+  const startDate = new Date();
+  const endDate = new Date(startDate.getTime() + product.durationDays * 24 * 60 * 60 * 1000);
+
+  const dailyInc = product.dailyIncome || product.dailyEarning;
+  const totalInc = product.totalIncome || (dailyInc * product.durationDays);
+
   const userInv: UserInvestment = {
     id: "INV-" + Date.now() + "-" + Math.floor(Math.random() * 1000),
     phone: user.phone,
+    userId: user.phone,
     productId: product.id,
     productName: product.name,
     price: product.price,
-    dailyEarning: product.dailyEarning,
+    purchaseAmount: product.price,
+    dailyIncome: dailyInc,
+    dailyEarning: dailyInc,
     earnedSoFar: 0,
+    totalIncome: totalInc,
     durationDays: product.durationDays,
     daysPassed: 0,
     status: 'active',
-    createdAt: new Date().toISOString(),
-    lastCollectAt: new Date().toISOString()
+    createdAt: startDate.toISOString(),
+    startDate: startDate.toISOString(),
+    endDate: endDate.toISOString(),
+    lastCollectAt: startDate.toISOString()
   };
 
   db.investments.push(userInv);
@@ -519,7 +536,7 @@ app.post("/api/products/invest", (req, res) => {
 
   res.json({
     success: true,
-    message: `${product.name} customized successfully at $${product.price}! Yielding $${product.dailyEarning.toFixed(2)} active daily returns.`,
+    message: `Package ${product.name} purchased successfully for ${product.price.toLocaleString()} Dinars! Earning ${dailyInc.toLocaleString()} Dinars active daily returns.`,
     investment: userInv,
     newBalance: db.users[userIndex].balance
   });
@@ -770,6 +787,90 @@ app.post("/api/admin/news/add", verifyAdmin, (req, res) => {
   db.news.unshift(item);
   saveDatabase();
   res.json({ success: true, item });
+});
+
+// Admin product package management: Add product package
+app.post("/api/admin/products/add", verifyAdmin, (req, res) => {
+  const { id, name, image, price, dailyIncome, durationDays, description, purchaseLimit } = req.body;
+  
+  if (!id || !name || price === undefined || dailyIncome === undefined || durationDays === undefined) {
+    return res.status(400).json({ error: "Required fields are missing: id, name, price, dailyIncome, durationDays" });
+  }
+
+  const idSanitized = id.trim();
+  const exists = db.products.some(p => p.id === idSanitized);
+  if (exists) {
+    return res.status(400).json({ error: "Product with this ID already exists." });
+  }
+
+  const parsedPrice = Number(price);
+  const parsedDaily = Number(dailyIncome);
+  const parsedDuration = Number(durationDays);
+  const totalInc = parsedDaily * parsedDuration;
+
+  const newProduct: InvestmentProduct = {
+    id: idSanitized,
+    name: name.trim(),
+    image: image ? image.trim() : "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=600&q=80",
+    price: parsedPrice,
+    dailyIncome: parsedDaily,
+    dailyEarning: parsedDaily,
+    durationDays: parsedDuration,
+    totalIncome: totalInc,
+    description: description ? description.trim() : `High yield stable cash return package: S-Class.`,
+    status: "active",
+    category: "deposit",
+    icon: "⌚",
+    rating: 4.8
+  };
+
+  if (purchaseLimit !== undefined && purchaseLimit !== null && purchaseLimit !== "") {
+    newProduct.purchaseLimit = Number(purchaseLimit);
+  }
+
+  db.products.push(newProduct);
+  saveDatabase();
+
+  res.json({ success: true, message: `Investment package ${newProduct.name} successfully created!`, product: newProduct });
+});
+
+// Admin product package management: Edit product package
+app.post("/api/admin/products/edit", verifyAdmin, (req, res) => {
+  const { productId, name, image, price, dailyIncome, durationDays, description, status, purchaseLimit } = req.body;
+  
+  if (!productId) {
+    return res.status(400).json({ error: "Product unique ID (productId) is required to edit." });
+  }
+
+  const productIdx = db.products.findIndex(p => p.id === productId);
+  if (productIdx === -1) {
+    return res.status(404).json({ error: "Target investment package not found." });
+  }
+
+  const p = db.products[productIdx];
+
+  if (name !== undefined) p.name = name.trim();
+  if (image !== undefined) p.image = image.trim();
+  if (price !== undefined) p.price = Number(price);
+  
+  if (dailyIncome !== undefined || durationDays !== undefined) {
+    const daily = dailyIncome !== undefined ? Number(dailyIncome) : p.dailyIncome;
+    const duration = durationDays !== undefined ? Number(durationDays) : p.durationDays;
+    p.dailyIncome = daily;
+    p.dailyEarning = daily; // Compatibility alignment
+    p.durationDays = duration;
+    p.totalIncome = daily * duration; // Recalculate total returns
+  }
+  
+  if (description !== undefined) p.description = description.trim();
+  if (status !== undefined) p.status = status;
+  
+  if (purchaseLimit !== undefined) {
+    p.purchaseLimit = purchaseLimit !== null && purchaseLimit !== "" ? Number(purchaseLimit) : undefined;
+  }
+
+  saveDatabase();
+  res.json({ success: true, message: `Package ${p.name} updated successfully!`, product: p });
 });
 
 // Get general news list

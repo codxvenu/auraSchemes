@@ -25,17 +25,20 @@ import {
   ExternalLink,
   ChevronDown,
   HelpCircle,
-  HelpCircle as QuestionIcon
+  HelpCircle as QuestionIcon,
+  MessageCircle,
+  Send,
+  X
 } from "lucide-react";
 
 const SECTORS = [
-  { backendLabel: "5000 IDR Prize Value", label: "5,000 Dinars (90% win)", icon: "💵", color: "#10b981", rgb: "16, 185, 129" },
-  { backendLabel: "10000 IDR grand Prize", label: "10,000 Dinars (5% win)", icon: "💰", color: "#f59e0b", rgb: "245, 158, 11" },
-  { backendLabel: "Iphone 17", label: "iPhone 17 (1% win)", icon: "📱", color: "#3b82f6", rgb: "59, 130, 246" },
-  { backendLabel: "600k IDR", label: "600k Dinars (1% win)", icon: "💸", color: "#ec4899", rgb: "236, 72, 153" },
-  { backendLabel: "Playstation", label: "Playstation (1% win)", icon: "🎮", color: "#8b5cf6", rgb: "139, 92, 246" },
-  { backendLabel: "Better luck next time", label: "Better luck next time (1% win)", icon: "✨", color: "#06b6d4", rgb: "6, 182, 212" },
-  { backendLabel: "AC", label: "Air Cond. (1% win)", icon: "💨", color: "#6b7280", rgb: "107, 114, 128" }
+  { backendLabel: "5000 IDR Prize Value", label: "5,000 IQD", icon: "💵", color: "#10b981", rgb: "16, 185, 129" },
+  { backendLabel: "10000 IDR grand Prize", label: "10,000 IQD", icon: "💰", color: "#f59e0b", rgb: "245, 158, 11" },
+  { backendLabel: "Iphone 17", label: "iPhone 17", icon: "📱", color: "#3b82f6", rgb: "59, 130, 246" },
+  { backendLabel: "600k IDR", label: "600k IQD", icon: "💸", color: "#ec4899", rgb: "236, 72, 153" },
+  { backendLabel: "Playstation", label: "Playstation", icon: "🎮", color: "#8b5cf6", rgb: "139, 92, 246" },
+  { backendLabel: "Better luck next time", label: "Better Luck", icon: "✨", color: "#06b6d4", rgb: "6, 182, 212" },
+  { backendLabel: "AC", label: "Air Cond.", icon: "💨", color: "#6b7280", rgb: "107, 114, 128" }
 ];
 
 export default function App() {
@@ -84,6 +87,8 @@ export default function App() {
   
   // Custom interactive systems
   const [copiedLink, setCopiedLink] = useState<boolean>(false);
+  const [showNoticeModal, setShowNoticeModal] = useState<boolean>(true);
+  const [selectedProductDetail, setSelectedProductDetail] = useState<InvestmentProduct | null>(null);
   const [spinResult, setSpinResult] = useState<{ outcome: string; prize: number } | null>(null);
   const [isSpinning, setIsSpinning] = useState<boolean>(false);
   const [wheelDegree, setWheelDegree] = useState<number>(0);
@@ -164,6 +169,7 @@ export default function App() {
     setUser(authenticatedUser);
     setToken(sessionToken);
     localStorage.setItem("aura_token", sessionToken);
+    setShowNoticeModal(true);
     updateUserData();
   };
 
@@ -174,6 +180,7 @@ export default function App() {
     setActiveTab("marketplace");
     setActiveCategory("all");
     setSpinResult(null);
+    setShowNoticeModal(true);
   };
 
   // Main UI Data Syncer
@@ -361,7 +368,7 @@ export default function App() {
 
     const amount = parseFloat(withdrawAmount);
     if (isNaN(amount) || amount < 5000 || amount > 30000) {
-      setProfileError("Withdrawal amount must reside strictly between 5,000 and 30,000 Dinars.");
+      setProfileError("Withdrawal amount must reside strictly between 5,000 and 30,000 IQD.");
       setActionLoading(false);
       return;
     }
@@ -688,13 +695,13 @@ export default function App() {
                     </p>
                     
                     <div className="pt-3 flex flex-wrap gap-2">
-                      <span className="px-2.5 py-1 bg-zinc-950 border border-zinc-800 rounded-lg text-[10px] font-mono text-emerald-400 font-semibold">5000 IDR (99% win)</span>
-                      <span className="px-2.5 py-1 bg-zinc-950 border border-zinc-800 rounded-lg text-[10px] font-mono text-amber-500 font-semibold">10000 IDR (1% win)</span>
-                      <span className="px-2.5 py-1 bg-zinc-950 border border-zinc-900 rounded-lg text-[10px] font-mono text-zinc-600">Iphone 17 (0% win)</span>
-                      <span className="px-2.5 py-1 bg-zinc-950 border border-zinc-900 rounded-lg text-[10px] font-mono text-zinc-600">600k IDR (0% win)</span>
-                      <span className="px-2.5 py-1 bg-zinc-950 border border-zinc-900 rounded-lg text-[10px] font-mono text-zinc-600">Playstation (0% win)</span>
-                      <span className="px-2.5 py-1 bg-zinc-950 border border-zinc-900 rounded-lg text-[10px] font-mono text-zinc-600">Refrigerator (0% win)</span>
-                      <span className="px-2.5 py-1 bg-zinc-950 border border-zinc-900 rounded-lg text-[10px] font-mono text-zinc-600">AC (0% win)</span>
+                      <span className="px-2.5 py-1 bg-zinc-950 border border-zinc-800 rounded-lg text-[10px] font-mono text-emerald-400 font-semibold">5000 IDR (90% win)</span>
+                      <span className="px-2.5 py-1 bg-zinc-950 border border-zinc-800 rounded-lg text-[10px] font-mono text-amber-500 font-semibold">10000 IDR (5% win)</span>
+                      <span className="px-2.5 py-1 bg-zinc-950 border border-zinc-850 rounded-lg text-[10px] font-mono text-blue-400 font-semibold">Iphone 17 (1% win)</span>
+                      <span className="px-2.5 py-1 bg-zinc-950 border border-zinc-850 rounded-lg text-[10px] font-mono text-pink-400 font-semibold">600k IDR (1% win)</span>
+                      <span className="px-2.5 py-1 bg-zinc-950 border border-zinc-850 rounded-lg text-[10px] font-mono text-violet-400 font-semibold">Playstation (1% win)</span>
+                      <span className="px-2.5 py-1 bg-zinc-950 border border-zinc-850 rounded-lg text-[10px] font-mono text-cyan-400 font-semibold">Better luck next time (1% win)</span>
+                      <span className="px-2.5 py-1 bg-zinc-950 border border-zinc-850 rounded-lg text-[10px] font-mono text-zinc-400 font-semibold">AC (1% win)</span>
                     </div>
                   </div>
 
@@ -886,66 +893,72 @@ export default function App() {
 
                 {filteredProducts.length === 0 ? (
                   <div className="bg-zinc-950 border border-zinc-900/60 rounded-xl p-8 text-center text-zinc-500 font-mono text-xs">
-                    No licensed bond keys resolved for this specific category filter.
+                    No active premium dividend packages found for this filter.
                   </div>
                 ) : (
-                  /* DOUBLE COLUMN GRID (cols-2) ON MOBILE. Satisfying literal specs with no overlaps */
+                  /* DOUBLE COLUMN GRID ON MOBILE. Elegant and rich package cards */
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
                     {filteredProducts.map((prod) => (
                       <div 
                         key={prod.id}
-                        className="bg-zinc-900 border border-zinc-800/80 rounded-[1.25rem] flex flex-col justify-between overflow-hidden p-3 md:p-4 hover:border-zinc-700/80 transition-all shadow-md group relative hover:-translate-y-0.5"
+                        onClick={() => setSelectedProductDetail(prod)}
+                        className="bg-zinc-900 border border-zinc-805/85 border-zinc-800/80 rounded-[1.25rem] flex flex-col justify-between overflow-hidden p-3 md:p-4 hover:border-zinc-700/80 transition-all shadow-md group relative hover:-translate-y-0.5 cursor-pointer"
                       >
-                        <div>
-                          {/* Header layout without absolute tags to prevent mobile overlap */}
-                          <div className="flex justify-between items-start gap-1 pb-1.5 border-b border-zinc-950 mb-2">
-                            <div className="flex flex-col gap-1 shrink-0">
-                              <span className="text-xl h-9 w-9 bg-zinc-950 rounded-lg flex items-center justify-center border border-zinc-850">
-                                {prod.icon}
+                        <div className="space-y-2.5">
+                          {/* Rich Package Image */}
+                          <div className="w-full h-24 sm:h-28 md:h-32 bg-zinc-950/40 rounded-xl overflow-hidden relative border border-zinc-950">
+                            <img 
+                              src={prod.image || "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=600&q=80"} 
+                              alt={prod.name}
+                              referrerPolicy="no-referrer"
+                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                            />
+                            {prod.status === "inactive" && (
+                              <span className="absolute inset-0 bg-black/60 flex items-center justify-center text-[10px] font-mono font-bold text-red-500 tracking-wider">
+                                DISABLED
                               </span>
-                              {prod.category === "vip-plan" && (
-                                <span className="text-[7px] md:text-[8px] bg-amber-500/10 border border-amber-500/30 text-amber-500 px-1 py-0.5 rounded font-mono uppercase font-bold text-center">
-                                  VIP Tier
-                                </span>
-                              )}
-                            </div>
-                            
-                            <div className="text-right min-w-0">
-                              <span className="text-[8px] md:text-[9px] text-zinc-500 block font-mono truncate">Capital Cost</span>
-                              <span className="text-xs font-bold font-mono text-white block truncate">
-                                {formatCurrency(prod.price)}
-                              </span>
-                            </div>
+                            )}
                           </div>
 
-                          <h4 className="text-xs font-bold font-display text-white line-clamp-1 group-hover:text-emerald-400 transition-colors">
-                            {prod.name}
-                          </h4>
-                          
-                          <p className="text-[10px] text-zinc-500 leading-relaxed mt-1 line-clamp-2">
-                            {prod.description}
-                          </p>
+                          <div>
+                            <span className="text-[8px] font-mono tracking-widest text-emerald-400 block font-bold uppercase">ID: {prod.id}</span>
+                            <h4 className="text-xs font-bold font-display text-white line-clamp-1 group-hover:text-emerald-400 transition-colors">
+                              {prod.name}
+                            </h4>
+                          </div>
                         </div>
 
-                        {/* Info & Core Action and ROI details */}
-                        <div className="mt-3 pt-3 border-t border-zinc-950 space-y-2 text-[10px]">
-                          <div className="grid grid-cols-2 gap-1 font-mono text-[9px]">
+                        {/* Interactive Info Block & ROI metrics */}
+                        <div className="mt-3 pt-3 border-t border-zinc-950 space-y-2.5 text-[10px]">
+                          <div className="grid grid-cols-2 gap-y-1.5 gap-x-1 font-mono text-[9px] text-zinc-400">
                             <div>
-                              <span className="block text-zinc-650 font-sans">ROI/Day</span>
-                              <span className="text-emerald-400 font-bold">{formatCurrency(prod.dailyEarning)}</span>
+                              <span className="block text-zinc-500 font-sans">Daily Income</span>
+                              <span className="text-emerald-400 font-bold">{formatCurrency(prod.dailyIncome || prod.dailyEarning || 0)}</span>
                             </div>
                             <div className="text-right">
-                              <span className="block text-zinc-650 font-sans">Duration</span>
-                              <span className="text-zinc-400 truncate block">{prod.durationDays}d</span>
+                              <span className="block text-zinc-500 font-sans">Total Income</span>
+                              <span className="text-cyan-400 font-bold">
+                                {formatCurrency(prod.totalIncome || ((prod.dailyIncome || prod.dailyEarning || 0) * prod.durationDays))}
+                              </span>
+                            </div>
+                            <div>
+                              <span className="block text-zinc-500 font-sans">Duration</span>
+                              <span className="text-zinc-300 font-medium">{prod.durationDays} days</span>
+                            </div>
+                            <div className="text-right">
+                              <span className="block text-zinc-500 font-sans">Price</span>
+                              <span className="text-white font-bold">{formatCurrency(prod.price)}</span>
                             </div>
                           </div>
 
                           <button
-                            onClick={() => handlePurchaseNode(prod.id)}
-                            disabled={actionLoading || user.balance < prod.price}
-                            className="w-full bg-zinc-800 hover:bg-white hover:text-zinc-900 text-white font-medium text-[9px] md:text-[10px] font-mono py-1.5 rounded-lg border border-white/5 shadow transition-all cursor-pointer disabled:opacity-40 disabled:pointer-events-none"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setSelectedProductDetail(prod);
+                            }}
+                            className="w-full bg-zinc-950 hover:bg-white hover:text-zinc-950 text-white font-semibold text-[9px] md:text-[10px] font-mono py-1.5 rounded-lg border border-zinc-800 transition-all cursor-pointer"
                           >
-                            {user.balance >= prod.price ? "STAKE / BOND" : "INSUFFICIENT"}
+                            STAKE / DETAILS
                           </button>
                         </div>
                       </div>
@@ -1053,7 +1066,7 @@ export default function App() {
                     <span className="text-[10px] font-mono font-bold tracking-widest text-emerald-400 uppercase block">Capital Refunding Desk</span>
                     <h3 className="text-lg font-bold font-display text-white">Deposit Secure Assets</h3>
                     <p className="text-xs text-zinc-400 leading-relaxed">
-                      Refuel your capital pool balance instantly. Minimum: <span className="font-mono text-white">1,500 Dinars</span>, Maximum: <span className="font-mono text-white">100,000 Dinars</span>. Review escrow details provided below, make transfer, and submit Transaction Hash details to the audit board.
+                      Refuel your capital pool balance instantly. Minimum: <span className="font-mono text-white">1,500 IQD</span>, Maximum: <span className="font-mono text-white">100,000 IQD</span>. Review escrow details provided below, make transfer, and submit Transaction Hash details to the audit board.
                     </p>
                   </div>
 
@@ -1108,7 +1121,7 @@ export default function App() {
                   <form onSubmit={handleDepositSubmit} className="space-y-3 font-sans">
                     <div className="grid grid-cols-2 gap-3">
                       <div>
-                        <label className="block text-[10px] font-medium text-zinc-500 mb-1">Drawn Amount (Dinars)</label>
+                        <label className="block text-[10px] font-medium text-zinc-500 mb-1">Drawn Amount (IQD)</label>
                         <input 
                           type="number" 
                           required 
@@ -1208,7 +1221,7 @@ export default function App() {
                     <span className="text-[10px] font-mono font-bold tracking-widest text-emerald-400 uppercase block">Secure Payout Portal</span>
                     <h3 className="text-lg font-bold font-display text-white">Request Digital Withdrawal</h3>
                     <p className="text-xs text-zinc-400 leading-relaxed">
-                      Convert compounding asset dividends to raw capital. Limit: <span className="font-mono text-white">5,000 Dinars</span> - <span className="font-mono text-white">30,000 Dinars</span> per transaction.
+                      Convert compounding asset dividends to raw capital. Limit: <span className="font-mono text-white">5,000 IQD</span> - <span className="font-mono text-white">30,000 IQD</span> per transaction.
                     </p>
                     <div className="p-3 bg-zinc-950 border border-zinc-850 rounded-xl text-xs font-mono space-y-1 text-zinc-400">
                       <p className="text-[11px] text-white font-sans font-bold flex items-center gap-1">
@@ -1216,7 +1229,7 @@ export default function App() {
                         Regulatory Mandate — GST Audit Rule
                       </p>
                       <p className="text-[10px] text-zinc-500 leading-relaxed">
-                        According to jurisdictional compliance regulations, approved withdrawals deduct the base amount request <strong className="text-white">+ 18% GST</strong> directly from your pool card balance. For example: To withdraw 10,000 Dinars, your available capital must reflect at least 11,800 Dinars in verified funds.
+                        According to jurisdictional compliance regulations, approved withdrawals deduct the base amount request <strong className="text-white">+ 18% GST</strong> directly from your pool card balance. For example: To withdraw 10,000 IQD, your available capital must reflect at least 11,800 IQD in verified funds.
                       </p>
                     </div>
                   </div>
@@ -1774,6 +1787,250 @@ export default function App() {
               </div>
             </div>
 
+            {/* ADMIN INVESTMENT PACKAGES MANAGEMENT SECTION */}
+            <div className="bg-zinc-900 border border-zinc-800 rounded-[1.5rem] p-5 space-y-4">
+              <div className="flex justify-between items-center pb-2 border-b border-zinc-950/60">
+                <div>
+                  <span className="text-[10px] font-mono text-zinc-500 uppercase block font-semibold">Contract Customizer</span>
+                  <h3 className="text-sm font-bold tracking-tight text-white font-display">Manage Product Packages</h3>
+                </div>
+                <span className="text-[9px] font-mono text-zinc-500 px-2 py-1 bg-zinc-950 rounded-lg">
+                  Total Active Registry Keys: {products.length}
+                </span>
+              </div>
+
+              {/* Add New Package Form */}
+              <div className="bg-zinc-950/60 p-4 border border-zinc-850 rounded-xl space-y-3 font-sans">
+                <span className="text-[9px] font-mono text-emerald-400 block font-bold uppercase tracking-wider">★ Create New Product Package</span>
+                <form 
+                  onSubmit={async (e) => {
+                    e.preventDefault();
+                    setProfileError(null);
+                    setProfileSuccess(null);
+                    setActionLoading(true);
+
+                    try {
+                      const fd = new FormData(e.currentTarget);
+                      const payload = {
+                        id: (fd.get("p_id") as string || "").trim(),
+                        name: (fd.get("p_name") as string || "").trim(),
+                        image: (fd.get("p_image") as string || "").trim() || "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=600&q=80",
+                        price: Number(fd.get("p_price")),
+                        dailyIncome: Number(fd.get("p_daily")),
+                        durationDays: Number(fd.get("p_duration")),
+                        description: (fd.get("p_desc") as string || "").trim() || "High-yield premium stable income return package.",
+                        purchaseLimit: fd.get("p_limit") ? Number(fd.get("p_limit")) : undefined
+                      };
+
+                      if (!payload.id || !payload.name || isNaN(payload.price) || isNaN(payload.dailyIncome) || isNaN(payload.durationDays)) {
+                        throw new Error("Missing or invalid numeric fields: id, name, price, dailyIncome, durationDays are required.");
+                      }
+
+                      const res = await auraApi.addProduct(payload);
+                      if (res.success) {
+                        setProfileSuccess(res.message);
+                        // Refresh products list
+                        const freshProds = await auraApi.getProducts();
+                        setProducts(freshProds.products);
+                        e.currentTarget.reset();
+                      }
+                    } catch (err: any) {
+                      setProfileError(err.message || "Failure creating product package.");
+                    } finally {
+                      setActionLoading(false);
+                    }
+                  }}
+                  className="grid grid-cols-1 md:grid-cols-4 gap-3 text-xs text-zinc-300"
+                >
+                  <div>
+                    <label className="block text-zinc-500 text-[10px] mb-0.5 font-mono">Unique ID (e.g. S5)</label>
+                    <input name="p_id" type="text" required placeholder="e.g. S5" className="w-full bg-zinc-90 w-full bg-zinc-900 border border-zinc-800 rounded px-2.5 py-1.5 text-white font-mono outline-none" />
+                  </div>
+                  <div>
+                    <label className="block text-zinc-500 text-[10px] mb-0.5 font-sans">Package Name</label>
+                    <input name="p_name" type="text" required placeholder="e.g. Aura Gold Rush S5" className="w-full bg-zinc-900 border border-zinc-800 rounded px-2.5 py-1.5 text-white outline-none" />
+                  </div>
+                  <div>
+                    <label className="block text-zinc-500 text-[10px] mb-0.5 font-sans">Price (IQD)</label>
+                    <input name="p_price" type="number" required placeholder="e.g. 500000" className="w-full bg-zinc-900 border border-zinc-800 rounded px-2.5 py-1.5 text-white font-mono outline-none" />
+                  </div>
+                  <div>
+                    <label className="block text-zinc-500 text-[10px] mb-0.5 font-sans">Daily Income (IQD)</label>
+                    <input name="p_daily" type="number" required placeholder="e.g. 6000" className="w-full bg-zinc-900 border border-zinc-800 rounded px-2.5 py-1.5 text-white font-mono outline-none" />
+                  </div>
+
+                  <div>
+                    <label className="block text-zinc-500 text-[10px] mb-0.5 font-sans">Duration (Days)</label>
+                    <select name="p_duration" className="w-full bg-zinc-900 border border-zinc-800 rounded px-2.5 py-1.5 text-white font-mono outline-none">
+                      <option value="30">30 days</option>
+                      <option value="60">60 days</option>
+                      <option value="90">90 days</option>
+                      <option value="180">180 days</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-zinc-500 text-[10px] mb-0.5 font-sans">Product Image URL / Path</label>
+                    <input name="p_image" type="text" placeholder="https://..." className="w-full bg-zinc-900 border border-zinc-800 rounded px-2.5 py-1.5 text-white outline-none" />
+                  </div>
+                  <div>
+                    <label className="block text-zinc-500 text-[10px] mb-0.5 font-sans">Purchase Limit (Optional)</label>
+                    <input name="p_limit" type="number" placeholder="No Limit" className="w-full bg-zinc-900 border border-zinc-800 rounded px-2.5 py-1.5 text-white font-mono outline-none" />
+                  </div>
+                  <div className="flex items-end">
+                    <button type="submit" className="w-full py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold font-mono rounded transition-colors cursor-pointer text-center">
+                      ADD PACKAGE
+                    </button>
+                  </div>
+
+                  <div className="md:col-span-4">
+                    <label className="block text-zinc-500 text-[10px] mb-0.5 font-sans">Short Package Description Message</label>
+                    <textarea name="p_desc" rows={2} placeholder="Brief editorial package description message..." className="w-full bg-zinc-900 border border-zinc-800 rounded p-2 text-white outline-none text-xs" />
+                  </div>
+                </form>
+              </div>
+
+              {/* Live Inline Editing list of packages */}
+              <div className="space-y-3 pt-2">
+                <span className="text-[9px] font-mono text-amber-500 block font-bold uppercase tracking-wider">⚡ Edit / Disable Existing Registry Packages</span>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {products.map((p) => (
+                    <div key={p.id} className="bg-zinc-950 p-4 border border-zinc-850 rounded-xl space-y-3 font-mono text-xs text-zinc-300">
+                      <div className="flex justify-between items-center pb-1.5 border-b border-zinc-900">
+                        <span className="text-white font-bold font-sans uppercase truncate text-[11px] block">{p.name} (ID: {p.id})</span>
+                        <span className={`px-2 py-0.5 rounded text-[8px] font-bold ${p.status === 'active' ? 'bg-emerald-950 text-emerald-400' : 'bg-red-950 text-red-500'}`}>
+                          {p.status.toUpperCase()}
+                        </span>
+                      </div>
+
+                      <form 
+                        onSubmit={async (e) => {
+                          e.preventDefault();
+                          setProfileError(null);
+                          setProfileSuccess(null);
+                          setActionLoading(true);
+
+                          try {
+                            const fd = new FormData(e.currentTarget);
+                            const updates = {
+                              name: (fd.get("e_name") as string || "").trim(),
+                              image: (fd.get("e_image") as string || "").trim(),
+                              price: Number(fd.get("e_price")),
+                              dailyIncome: Number(fd.get("e_dailyIncome")),
+                              durationDays: Number(fd.get("e_duration")),
+                              description: (fd.get("e_desc") as string || "").trim(),
+                              status: fd.get("e_status") as 'active' | 'inactive',
+                              purchaseLimit: fd.get("e_limit") ? Number(fd.get("e_limit")) : null
+                            };
+
+                            const res = await auraApi.editProduct(p.id, updates);
+                            if (res.success) {
+                              setProfileSuccess(res.message);
+                              const freshProds = await auraApi.getProducts();
+                              setProducts(freshProds.products);
+                            }
+                          } catch (err: any) {
+                            setProfileError(err.message || "Failed updating package.");
+                          } finally {
+                            setActionLoading(false);
+                          }
+                        }}
+                        className="space-y-2 text-[11px]"
+                      >
+                        <div className="grid grid-cols-2 gap-2 text-[10px]">
+                          <div>
+                            <label className="block text-zinc-500 mb-0.5">Package Name</label>
+                            <input name="e_name" type="text" defaultValue={p.name} className="w-full bg-zinc-900 border border-zinc-800 rounded px-2 py-1 text-white outline-none font-sans" />
+                          </div>
+                          <div>
+                            <label className="block text-zinc-500 mb-0.5">Image URL / Select</label>
+                            <input name="e_image" type="text" defaultValue={p.image} className="w-full bg-zinc-900 border border-zinc-800 rounded px-2 py-1 text-white outline-none" />
+                          </div>
+                          <div>
+                            <label className="block text-zinc-500 mb-0.5">Price (IQD)</label>
+                            <input name="e_price" type="number" defaultValue={p.price} className="w-full bg-zinc-900 border border-zinc-800 rounded px-2 py-1 text-white font-mono outline-none" />
+                          </div>
+                          <div>
+                            <label className="block text-zinc-500 mb-0.5">Daily Income (IQD)</label>
+                            <input name="e_dailyIncome" type="number" defaultValue={p.dailyIncome || p.dailyEarning || 0} className="w-full bg-zinc-900 border border-zinc-800 rounded px-2 py-1 text-white font-mono outline-none" />
+                          </div>
+                          <div>
+                            <label className="block text-zinc-500 mb-0.5">Duration (Days)</label>
+                            <select name="e_duration" defaultValue={p.durationDays} className="w-full bg-zinc-900 border border-zinc-800 rounded px-2 py-1 text-white font-mono outline-none">
+                              <option value="30">30 days</option>
+                              <option value="60">60 days</option>
+                              <option value="90">90 days</option>
+                              <option value="180">180 days</option>
+                            </select>
+                          </div>
+                          <div>
+                            <label className="block text-zinc-500 mb-0.5">Purchase Limit (Optional)</label>
+                            <input name="e_limit" type="number" defaultValue={p.purchaseLimit || ""} className="w-full bg-zinc-900 border border-zinc-800 rounded px-2 py-1 text-white font-mono outline-none" />
+                          </div>
+                          <div>
+                            <label className="block text-zinc-500 mb-0.5 text-cyan-400 font-bold">Total Return (Auto Calc)</label>
+                            <span className="block font-bold text-cyan-400 py-1">
+                              {formatCurrency((p.dailyIncome || p.dailyEarning || 0) * p.durationDays)}
+                            </span>
+                          </div>
+                          <div>
+                            <label className="block text-zinc-500 mb-0.5 text-amber-500 font-bold">Package Status</label>
+                            <select name="e_status" defaultValue={p.status} className="w-full bg-zinc-900 border border-zinc-800 rounded px-2 py-1 text-white font-mono outline-none text-amber-500">
+                              <option value="active">Active (Visible)</option>
+                              <option value="inactive">Inactive (Disabled)</option>
+                            </select>
+                          </div>
+                        </div>
+
+                        <div>
+                          <label className="block text-zinc-550 mb-0.5 text-[10px]">Description Message</label>
+                          <textarea name="e_desc" rows={1} defaultValue={p.description} className="w-full bg-zinc-900 border border-zinc-800 rounded p-1.5 text-white outline-none text-[10px]" />
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-2 pt-1.5">
+                          <button 
+                            type="button"
+                            onClick={async () => {
+                              setProfileError(null);
+                              setProfileSuccess(null);
+                              setActionLoading(true);
+                              try {
+                                const newStatus = p.status === 'active' ? 'inactive' : 'active';
+                                const res = await auraApi.editProduct(p.id, { status: newStatus });
+                                if (res.success) {
+                                  setProfileSuccess(res.message);
+                                  const freshProds = await auraApi.getProducts();
+                                  setProducts(freshProds.products);
+                                }
+                              } catch (err: any) {
+                                setProfileError(err.message);
+                              } finally {
+                                setActionLoading(false);
+                              }
+                            }}
+                            className={`py-1.5 rounded text-center text-[9px] font-bold tracking-wider cursor-pointer font-sans border transition-all ${
+                              p.status === 'active' 
+                                ? 'bg-red-950/20 border-red-900/60 hover:bg-red-900 hover:text-white text-red-400' 
+                                : 'bg-emerald-950/20 border-emerald-900/60 hover:bg-emerald-900 hover:text-white text-emerald-400'
+                            }`}
+                          >
+                            {p.status === 'active' ? "DISABLE PACKAGE" : "ENABLE PACKAGE"}
+                          </button>
+
+                          <button 
+                            type="submit" 
+                            className="py-1.5 bg-zinc-900 hover:bg-white hover:text-zinc-950 text-white font-bold border border-zinc-800 rounded text-center text-[9px] tracking-wider cursor-pointer font-sans transition-colors"
+                          >
+                            SAVE PACKAGE VALUES
+                          </button>
+                        </div>
+                      </form>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
             {/* ADM NEWS FORM BULLETIN GENERATION */}
             <div className="bg-zinc-900 border border-zinc-800 rounded-[1.5rem] p-5">
               <span className="text-[10px] font-mono text-zinc-500 uppercase block font-semibold mb-1">News Desk Bulletin Injection</span>
@@ -1850,6 +2107,250 @@ export default function App() {
           © {new Date().getFullYear()} Aura Inc. Secure terminal live.
         </p>
       </footer>
+
+      {/* PLATFORM NOTICE MODAL POPUP */}
+      {showNoticeModal && (
+        <div id="platform-notice-modal" className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
+          {/* Overlay Background */}
+          <div 
+            className="absolute inset-0 bg-black/80 backdrop-blur-sm"
+            onClick={() => setShowNoticeModal(false)}
+          ></div>
+          
+          {/* Modal Card Container */}
+          <div className="relative bg-white text-zinc-950 max-w-sm sm:max-w-md w-full rounded-2xl border border-zinc-200 shadow-2xl overflow-hidden p-6 flex flex-col space-y-5 animate-fade-in z-10 font-sans">
+            {/* Centered Large Red Title Header */}
+            <div className="text-center">
+              <h2 className="text-xl sm:text-2xl font-extrabold text-red-650 text-red-600 tracking-tight uppercase">
+                Platform Notice
+              </h2>
+              <div className="h-0.5 w-16 bg-red-600 mx-auto mt-1.5 rounded-full"></div>
+            </div>
+
+            {/* List Content Section */}
+            <div className="space-y-4 text-left font-sans text-xs sm:text-sm text-zinc-900 leading-relaxed max-h-[300px] overflow-y-auto pr-1">
+              
+              {/* Item 1 */}
+              <div className="flex items-start gap-2.5">
+                <span className="text-emerald-600 font-bold shrink-0 text-sm mt-0.5">✔</span>
+                <p className="font-semibold text-zinc-950">
+                  Register now and get 5000 Iraqi dinars!
+                </p>
+              </div>
+
+              {/* Item 2 */}
+              <div className="flex items-start gap-2.5">
+                <span className="text-zinc-650 font-bold shrink-0 text-sm mt-0.5">➥</span>
+                <div className="space-y-1">
+                  <p className="font-bold text-zinc-950">
+                    Invite new users to invest and earn instant rewards:
+                  </p>
+                  <div className="pl-3 space-y-0.5 text-zinc-850 font-semibold">
+                    <p>Level 1: 25%</p>
+                    <p>Level 2: 3%</p>
+                    <p>Level 3: 1%.</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Item 3 */}
+              <div className="flex items-start gap-2.5">
+                <span className="text-zinc-650 font-bold shrink-0 text-sm mt-0.5">➥</span>
+                <p className="text-zinc-850 font-semibold">
+                  Deposits and withdrawals are available daily from <span className="font-bold text-zinc-950">9:00 AM to 9:00 PM</span>, with no maximum daily withdrawal limit.
+                </p>
+              </div>
+
+              {/* Item 4 */}
+              <div className="flex items-start gap-2.5">
+                <span className="text-emerald-600 font-bold shrink-0 text-sm mt-0.5">✔</span>
+                <p className="font-semibold text-zinc-850">
+                  Premium members enjoy daily earnings.
+                </p>
+              </div>
+
+              {/* Item 5 */}
+              <div className="flex items-start gap-2.5">
+                <span className="text-zinc-950 font-bold shrink-0 text-sm mt-0.5">➤</span>
+                <p className="font-bold text-zinc-950">
+                  Rewarding returns, daily income!
+                </p>
+              </div>
+
+              {/* CTA Final Hook */}
+              <div className="text-center pt-2 font-extrabold text-emerald-600 text-sm">
+                Start growing your money now!
+              </div>
+            </div>
+
+            {/* Buttons Section */}
+            <div className="space-y-3 pt-1">
+              <div className="grid grid-cols-2 gap-3">
+                <a
+                  href="https://t.me/AuraEscrowChannel"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-center gap-1.5 py-2.5 px-2 bg-[#0088cc] hover:bg-[#007cbd] text-white text-[10px] font-bold uppercase rounded-xl transition-all text-center cursor-pointer shadow-[0_3px_8px_rgba(0,136,204,0.25)]"
+                >
+                  <Send className="w-3.5 h-3.5 shrink-0" />
+                  <span className="truncate">Telegram Channel</span>
+                </a>
+                <a
+                  href="https://t.me/AuraEscrowGroup"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-center gap-1.5 py-2.5 px-2 bg-[#0088cc] hover:bg-[#007cbd] text-white text-[10px] font-bold uppercase rounded-xl transition-all text-center cursor-pointer shadow-[0_3px_8px_rgba(0,136,204,0.25)]"
+                >
+                  <MessageCircle className="w-3.5 h-3.5 shrink-0" />
+                  <span className="truncate">Telegram Group</span>
+                </a>
+              </div>
+              
+              <button
+                onClick={() => setShowNoticeModal(false)}
+                className="w-full py-2.5 bg-zinc-950 hover:bg-zinc-900 text-white text-xs font-bold tracking-widest uppercase rounded-xl transition-colors text-center cursor-pointer shadow-md"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* DETAILED INVESTMENT PACKAGE VIEW MODAL */}
+      {selectedProductDetail && (
+        <div id="product-detail-modal" className="fixed inset-0 z-[1000] flex items-center justify-center p-4">
+          {/* Overlay Background */}
+          <div 
+            className="absolute inset-0 bg-black/90 backdrop-blur-sm"
+            onClick={() => {
+              setSelectedProductDetail(null);
+              setProfileError(null);
+              setProfileSuccess(null);
+            }}
+          ></div>
+          
+          <div className="relative bg-zinc-950 text-white max-w-sm sm:max-w-md w-full rounded-2xl border border-zinc-900 shadow-2xl overflow-hidden p-5 flex flex-col space-y-4 animate-fade-in z-10 font-sans">
+            {/* Package Image Block */}
+            <div className="w-full h-40 bg-zinc-950 rounded-xl overflow-hidden relative border border-zinc-900">
+              <img 
+                src={selectedProductDetail.image || "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=600&q=80"} 
+                alt={selectedProductDetail.name}
+                referrerPolicy="no-referrer"
+                className="w-full h-full object-cover"
+              />
+              <span className="absolute top-2.5 left-2.5 text-[8px] font-mono bg-zinc-950/80 text-emerald-400 px-2 py-0.5 rounded-full uppercase font-bold border border-zinc-850">
+                Tier Code: {selectedProductDetail.id}
+              </span>
+            </div>
+
+            {/* Header / Info */}
+            <div className="space-y-1 text-center">
+              <h3 className="text-base sm:text-lg font-extrabold text-white tracking-tight leading-snug">
+                {selectedProductDetail.name}
+              </h3>
+              <p className="text-[10px] text-zinc-500 font-mono uppercase tracking-widest">
+                Safe Escrow Contract Pool
+              </p>
+            </div>
+
+            {/* Message / Description */}
+            <div className="bg-zinc-900/40 p-3 rounded-xl border border-zinc-900/60 text-zinc-400 text-xs leading-relaxed">
+              {selectedProductDetail.description}
+            </div>
+
+            {/* Package Detail Table Metrics */}
+            <div className="bg-zinc-900/20 rounded-xl p-3 border border-zinc-900/80 space-y-2 text-[11px] font-mono">
+              <div className="flex justify-between border-b border-zinc-900/30 pb-1.5">
+                <span className="text-zinc-500">Purchase Price</span>
+                <span className="text-amber-500 font-bold">{formatCurrency(selectedProductDetail.price)}</span>
+              </div>
+              <div className="flex justify-between border-b border-zinc-900/30 pb-1.5">
+                <span className="text-zinc-500">Daily Income</span>
+                <span className="text-emerald-400 font-bold">+{formatCurrency(selectedProductDetail.dailyIncome || selectedProductDetail.dailyEarning || 0)}</span>
+              </div>
+              <div className="flex justify-between border-b border-zinc-900/30 pb-1.5">
+                <span className="text-zinc-500">Duration Period</span>
+                <span className="text-white font-medium">{selectedProductDetail.durationDays} Days</span>
+              </div>
+              <div className="flex justify-between border-b border-zinc-900/30 pb-1.5">
+                <span className="text-zinc-500">Total Income Return</span>
+                <span className="text-cyan-400 font-extrabold">
+                  {formatCurrency(selectedProductDetail.totalIncome || ((selectedProductDetail.dailyIncome || selectedProductDetail.dailyEarning || 0) * selectedProductDetail.durationDays))}
+                </span>
+              </div>
+              <div className="flex flex-col gap-1 pt-1">
+                <span className="text-[9px] text-zinc-400 font-sans font-bold uppercase tracking-wider text-center">Settlement Period Information</span>
+                <span className="text-[9px] text-zinc-500 text-center font-sans tracking-tight leading-normal">
+                  Yield payouts credit directly to your active capital profile dashboard every 45 SECONDS representing 1 full simulated business day cycle.
+                </span>
+              </div>
+            </div>
+
+            {/* Account Checking Balance Status Display */}
+            <div className="flex justify-between items-center px-1 text-[11px] font-mono">
+              <span className="text-zinc-500">Your Current Balance</span>
+              <span className={`font-bold ${user && user.balance >= selectedProductDetail.price ? "text-emerald-400" : "text-amber-500"}`}>
+                {user ? formatCurrency(user.balance) : "0 IQD"}
+              </span>
+            </div>
+
+            {/* Error/Feedback display inside modal */}
+            {profileError && (
+              <div className="bg-red-950/20 border border-red-900/50 text-red-400 text-[10px] p-2 rounded-lg font-mono text-center">
+                ⚠️ {profileError}
+              </div>
+            )}
+            {profileSuccess && (
+              <div className="bg-emerald-950/20 border border-emerald-900/50 text-emerald-400 text-[10px] p-2 rounded-lg font-mono text-center">
+                ✓ {profileSuccess}
+              </div>
+            )}
+
+            {/* Modal Actions */}
+            <div className="grid grid-cols-2 gap-3 pt-1">
+              <button
+                type="button"
+                onClick={() => {
+                  setSelectedProductDetail(null);
+                  setProfileError(null);
+                  setProfileSuccess(null);
+                }}
+                className="py-2.5 bg-zinc-900 hover:bg-zinc-800 text-zinc-400 hover:text-white text-xs font-bold tracking-wider uppercase rounded-xl transition-colors text-center cursor-pointer border border-zinc-850"
+              >
+                Cancel
+              </button>
+              
+              <button
+                type="button"
+                disabled={actionLoading || !user || user.balance < selectedProductDetail.price || selectedProductDetail.status === "inactive"}
+                onClick={async () => {
+                  setProfileError(null);
+                  setProfileSuccess(null);
+                  try {
+                    const res = await auraApi.investProduct(selectedProductDetail.id);
+                    if (res.success) {
+                      setProfileSuccess(res.message);
+                      setUser(prev => prev ? { ...prev, balance: res.newBalance } : null);
+                      await updateUserData();
+                      // Close modal on success after a short delay
+                      setTimeout(() => {
+                        setSelectedProductDetail(null);
+                        setProfileSuccess(null);
+                      }, 1800);
+                    }
+                  } catch (err: any) {
+                    setProfileError(err.message || "Balance insufficient or stake error.");
+                  }
+                }}
+                className="py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold tracking-wider uppercase rounded-xl transition-all text-center cursor-pointer shadow-[0_4px_12px_rgba(16,185,129,0.2)] disabled:opacity-40 disabled:pointer-events-none"
+              >
+                {actionLoading ? "Processing..." : (user && user.balance >= selectedProductDetail.price) ? "Confirm Purchase" : "Low Balance"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
     </div>
   );

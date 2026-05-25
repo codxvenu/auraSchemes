@@ -12,27 +12,39 @@ export interface User {
 export interface InvestmentProduct {
   id: string;
   name: string;
-  price: number;        // cost to buy/invest, min $5 - max $300
-  dailyEarning: number; // earn $X per day
-  durationDays: number; // total duration
-  category: string;     // category id
-  icon: string;
+  image: string;        // Package image path/URL
+  price: number;        // Purchase price
+  dailyIncome: number;  // Daily Income
+  dailyEarning: number; // Keep for interface compatibility
+  durationDays: number; // Duration in days
+  totalIncome: number;  // dailyIncome * durationDays
   description: string;
-  rating: number;
+  status: 'active' | 'inactive';
+  createdAt?: string;
+  category?: string;     // category ID
+  icon?: string;
+  rating?: number;
+  purchaseLimit?: number; // Optional purchase limit
 }
 
 export interface UserInvestment {
   id: string;
-  phone: string;
+  phone: string;        // same as userId in this environment
+  userId?: string;      // Unique user ID
   productId: string;
   productName: string;
-  price: number;
+  price: number;        // Purchase price or purchaseAmount
+  purchaseAmount?: number;
+  dailyIncome?: number;
   dailyEarning: number;
   earnedSoFar: number;
+  totalIncome?: number;
   durationDays: number;
   daysPassed: number;
-  status: 'active' | 'completed';
+  status: 'active' | 'completed' | 'inactive';
   createdAt: string;
+  startDate?: string;
+  endDate?: string;
   lastCollectAt: string; // when earnings were last collected
 }
 
