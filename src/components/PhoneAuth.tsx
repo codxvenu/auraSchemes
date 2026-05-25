@@ -21,6 +21,7 @@ export default function PhoneAuth({ onAuthSuccess }: PhoneAuthProps) {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [rememberMe, setRememberMe] = useState(true);
 
   // Read URL query parameters
   useEffect(() => {
@@ -56,7 +57,13 @@ export default function PhoneAuth({ onAuthSuccess }: PhoneAuthProps) {
     try {
       if (isLogin) {
         const res = await auraApi.login(fullPhone, password);
-        localStorage.setItem("aura_token", res.token);
+        if (rememberMe) {
+          localStorage.setItem("aura_token", res.token);
+          sessionStorage.removeItem("aura_token");
+        } else {
+          sessionStorage.setItem("aura_token", res.token);
+          localStorage.removeItem("aura_token");
+        }
         setSuccess("Welcome to Aura Global Elite. Synchronizing terminal...");
         setTimeout(() => {
           onAuthSuccess(res.user, res.token);
@@ -227,6 +234,20 @@ export default function PhoneAuth({ onAuthSuccess }: PhoneAuthProps) {
               />
             </div>
           </div>
+
+          {isLogin && (
+            <div className="flex items-center justify-between pt-1">
+              <label className="flex items-center gap-2 text-xs text-zinc-400 cursor-pointer select-none">
+                <input
+                  type="checkbox"
+                  checked={rememberMe}
+                  onChange={(e) => setRememberMe(e.target.checked)}
+                  className="rounded border-zinc-800 bg-zinc-950 text-emerald-500 focus:ring-zinc-700 h-3.5 w-3.5 cursor-pointer accent-emerald-500"
+                />
+                Remember Me (Keep me logged in for 30 days)
+              </label>
+            </div>
+          )}
 
           {!isLogin && (
             <div>

@@ -13,160 +13,17 @@ import {
 
 const app = express();
 const PORT = 3000;
-const DB_FILE = path.join(process.cwd(), "aura_db.json");
+import { db, initializeDatabase, persistDatabase } from "./database";
+
+// Keep saveDatabase delegation for maximum compatibility
+function saveDatabase() {
+  persistDatabase();
+}
 
 app.use(express.json());
 
-// --- DATABASE IN-MEMORY AND FILE PERSISTENCE ENGINE ---
-interface DatabaseSchema {
-  users: User[];
-  passwords: Record<string, string>; // phone -> password
-  products: InvestmentProduct[];
-  investments: UserInvestment[];
-  deposits: DepositRequest[];
-  withdrawals: WithdrawalRequest[];
-  adminSettings: AdminSettings;
-  news: ForumNews[];
-}
-
-let db: DatabaseSchema = {
-  users: [],
-  passwords: {},
-  products: [],
-  investments: [],
-  deposits: [],
-  withdrawals: [],
-  adminSettings: {
-    paymentDetails: {
-      bankName: "Aura Global Liquidity Bank",
-      accountNumber: "9100-2443-8822-09",
-      accountName: "Aura Escrow Services LLC",
-      usdtAddress: "TY9H2jKw87hsdKKjsdf8892hhKasdk",
-      instructions: "Transfer the amount via USDT (TRC20) or your Local Bank Account. Enter your exact Transaction Hash/TXID or Transfer reference below. The Admin will review and credit your balance within 10 minutes."
-    }
-  },
-  news: []
-};
-
-// Seed initial default products and admin
-function seedDatabase() {
-  // Pre-seed core investment products
-  const hasLegacyOrMissingNew = !db.products.some(p => p.id === "s1") || db.products.some(p => p.id === "prod-basic" || p.id === "S1");
-  if (hasLegacyOrMissingNew || db.products.length === 0) {
-    db.products = [
-      {
-        id: "s1",
-        name: "S1",
-        image: "https://lqcaso.com/ui7/pro/1.jpg",
-        price: 10000,
-        dailyIncome: 1000,
-        dailyEarning: 1000,
-        durationDays: 90,
-        totalIncome: 90000,
-        status: "active",
-        category: "deposit",
-        icon: "⌚",
-        description: "Starter investment package S1 featuring high quality catalog assets.",
-        rating: 4.8
-      },
-      {
-        id: "s2",
-        name: "S2",
-        image: "https://lqcaso.com/ui7/pro/2.jpg",
-        price: 40000,
-        dailyIncome: 7300,
-        dailyEarning: 7300,
-        durationDays: 90,
-        totalIncome: 657000,
-        status: "active",
-        category: "deposit",
-        icon: "⚡",
-        description: "Advanced investment package S2 with premium compound earnings model.",
-        rating: 4.9
-      },
-      {
-        id: "s3",
-        name: "S3",
-        image: "https://lqcaso.com/ui7/pro/3.jpg",
-        price: 100000,
-        dailyIncome: 20700,
-        dailyEarning: 20700,
-        durationDays: 90,
-        totalIncome: 1863000,
-        status: "active",
-        category: "vip-plan",
-        icon: "👑",
-        description: "Pro VIP investment package S3 with maximum daily payout yields.",
-        rating: 5.0
-      }
-    ];
-  }
-
-  // Pre-seed news
-  if (db.news.length === 0) {
-    db.news = [
-      {
-        id: "news-1",
-        title: "Aura Platform Launch & Node Pool Upgrades",
-        content: "We are thrilled to launch Aura - the premium editorial marketplace for high-performance key-vouchers and micro-node bonding. Enjoy zero-fee local deposits and swift automated audits.",
-        date: "2026-05-24",
-        author: "Aura Admin Team"
-      },
-      {
-        id: "news-2",
-        title: "USDT (TRC20) Liquidity Reserves Audited",
-        content: "Our corporate reserve wallets have passed third-party Swiss liquidity audits. All global withdrawals remain 100% liquid and instant.",
-        date: "2026-05-23",
-        author: "Aura Compliance"
-      }
-    ];
-  }
-
-  // Pre-seed Admin account if none exists
-  const adminExists = db.users.some(u => u.role === "admin");
-  if (!adminExists) {
-    // Default Admin
-    const adminUser: User = {
-      phone: "+1111111111",
-      username: "Aura CEO",
-      referralCode: "AURA",
-      referredBy: undefined,
-      balance: 10000,
-      role: 'admin',
-      createdAt: new Date().toISOString()
-    };
-    db.users.push(adminUser);
-    db.passwords["+1111111111"] = "admin"; // phone -> password
-  }
-}
-
-function loadDatabase() {
-  try {
-    if (fs.existsSync(DB_FILE)) {
-      const data = fs.readFileSync(DB_FILE, "utf-8");
-      const parsed = JSON.parse(data);
-      db = { ...db, ...parsed };
-      console.log("Database loaded successfully with", db.users.length, "users.");
-    } else {
-      console.log("Database file not found, seeding fresh defaults.");
-    }
-    seedDatabase();
-    saveDatabase();
-  } catch (err) {
-    console.error("Error loading database:", err);
-    seedDatabase();
-  }
-}
-
-function saveDatabase() {
-  try {
-    fs.writeFileSync(DB_FILE, JSON.stringify(db, null, 2), "utf-8");
-  } catch (err) {
-    console.error("Error saving database:", err);
-  }
-}
-
-loadDatabase();
+// Initialize Database Storage
+initializeDatabase();
 
 // --- AUTH TOKENS MAP ---
 // Simple token generator for direct iframe stability
@@ -388,11 +245,11 @@ app.post("/api/financial/deposit", (req, res) => {
   const user = getAuthenticatedUser(req);
   if (!user) return res.status(401).json({ error: "Unauthorized" });
 
-  const { amount, method, txid } = req.body;
+  const { amount, method, txid, screenshot } = req.body;
   const parsedAmt = parseFloat(amount);
 
-  if (isNaN(parsedAmt) || parsedAmt < 5 || parsedAmt > 300) {
-    return res.status(400).json({ error: "Invalid deposit amount. Must be between $5 and $300." });
+  if (isNaN(parsedAmt) || parsedAmt < 5000 || parsedAmt > 30000) {
+    return res.status(400).json({ error: "Invalid deposit amount. Must be between 5,000 and 30,000 IQD." });
   }
 
   if (!txid || txid.trim().length === 0) {
@@ -405,6 +262,7 @@ app.post("/api/financial/deposit", (req, res) => {
     amount: parsedAmt,
     method: method || "USDT",
     txid: txid.trim(),
+    screenshot: screenshot || undefined,
     status: 'pending',
     createdAt: new Date().toISOString()
   };
@@ -423,8 +281,8 @@ app.post("/api/financial/withdraw", (req, res) => {
   const { amount, paymentDetails } = req.body;
   const parsedAmt = parseFloat(amount);
 
-  if (isNaN(parsedAmt) || parsedAmt < 5000 || parsedAmt > 30000) {
-    return res.status(400).json({ error: "Invalid withdrawal amount. Must be between 5,000 and 30,000 Dinars." });
+  if (isNaN(parsedAmt) || parsedAmt < 5000) {
+    return res.status(400).json({ error: "Invalid withdrawal amount. Must be at least 5,000 Dinars." });
   }
 
   if (!paymentDetails || paymentDetails.trim().length === 0) {

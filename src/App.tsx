@@ -22,6 +22,7 @@ import {
   Coins, 
   Users, 
   ShieldCheck, 
+  ShieldAlert,
   ExternalLink,
   ChevronDown,
   HelpCircle,
@@ -43,7 +44,7 @@ const SECTORS = [
 
 export default function App() {
   const [user, setUser] = useState<User | null>(null);
-  const [token, setToken] = useState<string | null>(localStorage.getItem("aura_token"));
+  const [token, setToken] = useState<string | null>(localStorage.getItem("aura_token") || sessionStorage.getItem("aura_token"));
   const [activeTab, setActiveTab] = useState<string>("marketplace"); // marketplace, financials, news, settings, admin
   const [loading, setLoading] = useState<boolean>(true);
   const [actionLoading, setActionLoading] = useState<boolean>(false);
@@ -61,10 +62,11 @@ export default function App() {
 
   // Financial inputs
   const [financialSubTab, setFinancialSubTab] = useState<"deposit" | "withdraw">("deposit");
-  const [depositAmount, setDepositAmount] = useState<string>("50");
+  const [depositAmount, setDepositAmount] = useState<string>("5000");
   const [depositTxid, setDepositTxid] = useState<string>("");
-  const [depositMethod, setDepositMethod] = useState<string>("USDT");
-  const [withdrawAmount, setWithdrawAmount] = useState<string>("50");
+  const [depositMethod, setDepositMethod] = useState<string>("USDT (TRC20)");
+  const [screenshotPreview, setScreenshotPreview] = useState<string | null>(null);
+  const [withdrawAmount, setWithdrawAmount] = useState<string>("5000");
   const [withdrawalPaymentDetails, setWithdrawalPaymentDetails] = useState<string>("");
 
   // Rejection notification modal/popup
@@ -87,7 +89,13 @@ export default function App() {
   
   // Custom interactive systems
   const [copiedLink, setCopiedLink] = useState<boolean>(false);
-  const [showNoticeModal, setShowNoticeModal] = useState<boolean>(true);
+  const [showNoticeModal, setShowNoticeModal] = useState<boolean>(() => {
+    return !sessionStorage.getItem("aura_notice_shown");
+  });
+  const closeNoticeModal = () => {
+    setShowNoticeModal(false);
+    sessionStorage.setItem("aura_notice_shown", "true");
+  };
   const [selectedProductDetail, setSelectedProductDetail] = useState<InvestmentProduct | null>(null);
   const [spinResult, setSpinResult] = useState<{ outcome: string; prize: number } | null>(null);
   const [isSpinning, setIsSpinning] = useState<boolean>(false);
@@ -127,6 +135,7 @@ export default function App() {
       } catch (err) {
         console.error("Token invalid or expired. Resetting.", err);
         localStorage.removeItem("aura_token");
+        sessionStorage.removeItem("aura_token");
         setToken(null);
         setUser(null);
       } finally {
@@ -152,6 +161,7 @@ export default function App() {
           console.error("Failed to background sync ticks", err);
           if (err?.message && (err.message.includes("Unauthorized") || err.message.includes("login") || err.message.includes("expired") || err.message.includes("token"))) {
             localStorage.removeItem("aura_token");
+            sessionStorage.removeItem("aura_token");
             setToken(null);
             setUser(null);
             setActiveTab("marketplace");
@@ -168,13 +178,17 @@ export default function App() {
   const handleAuthSuccess = (authenticatedUser: User, sessionToken: string) => {
     setUser(authenticatedUser);
     setToken(sessionToken);
-    localStorage.setItem("aura_token", sessionToken);
-    setShowNoticeModal(true);
+    if (!sessionStorage.getItem("aura_token")) {
+      localStorage.setItem("aura_token", sessionToken);
+    }
+    const noticeShown = sessionStorage.getItem("aura_notice_shown");
+    setShowNoticeModal(!noticeShown);
     updateUserData();
   };
 
   const handleLogout = () => {
     localStorage.removeItem("aura_token");
+    sessionStorage.removeItem("aura_token");
     setToken(null);
     setUser(null);
     setActiveTab("marketplace");
@@ -240,6 +254,7 @@ export default function App() {
       console.error("Error synchronizing Aura terminal states:", err);
       if (err?.message && (err.message.includes("Unauthorized") || err.message.includes("login") || err.message.includes("expired") || err.message.includes("token"))) {
         localStorage.removeItem("aura_token");
+        sessionStorage.removeItem("aura_token");
         setToken(null);
         setUser(null);
         setActiveTab("marketplace");
@@ -333,27 +348,37 @@ export default function App() {
     setProfileError(null);
 
     const amount = parseFloat(depositAmount);
-    if (isNaN(amount) || amount < 5 || amount > 300) {
-      setProfileError("Deposit amount must reside strictly between $5.00 and $300.00.");
+    if (isNaN(amount) || amount < 5000 || amount > 30000) {
+      setProfileError("Deposit amount must reside strictly between 5,000 IQD and 30,000 IQD.");
       setActionLoading(false);
+      setTimeout(() => {
+        setProfileError(null);
+      }, 5000);
       return;
     }
 
     if (!depositTxid.trim()) {
       setProfileError("A valid reference Transaction ID (TXID) is mandatory to initiate audits.");
       setActionLoading(false);
+      setTimeout(() => {
+        setProfileError(null);
+      }, 5000);
       return;
     }
 
     try {
-      const res = await auraApi.submitDeposit(amount, depositMethod, depositTxid);
+      const res = await auraApi.submitDeposit(amount, depositMethod, depositTxid, screenshotPreview || undefined);
       if (res.success) {
-        setProfileSuccess(`Deposit reference submitted! Code: ${res.deposit.id}. Standard audit takes 5-10 minutes.`);
+        setProfileSuccess(`Deposit reference submitted! Code: ${res.deposit.id}. Standard audit takes 10 minutes.`);
         setDepositTxid("");
+        setScreenshotPreview(null);
         await updateUserData();
       }
     } catch (err: any) {
       setProfileError(err.message || "Failed to initiate deposit request.");
+      setTimeout(() => {
+        setProfileError(null);
+      }, 5000);
     } finally {
       setActionLoading(false);
     }
@@ -367,8 +392,16 @@ export default function App() {
     setProfileError(null);
 
     const amount = parseFloat(withdrawAmount);
-    if (isNaN(amount) || amount < 5000 || amount > 30000) {
-      setProfileError("Withdrawal amount must reside strictly between 5,000 and 30,000 IQD.");
+    if (isNaN(amount) || amount < 5000) {
+      setProfileError("Withdrawal amount must be at least 5,000 IQD.");
+      setActionLoading(false);
+      return;
+    }
+
+    // Protection rule - must have at least one active device (product node) inside portfolio
+    const activeDevicesCount = userInvestments.filter(inv => inv.status === 'active').length;
+    if (activeDevicesCount === 0) {
+      setProfileError("To protect the rights and interests of the platform and users, you must have at least one device to activate the withdrawal feature.");
       setActionLoading(false);
       return;
     }
@@ -911,7 +944,7 @@ export default function App() {
                               src={prod.image || "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=600&q=80"} 
                               alt={prod.name}
                               referrerPolicy="no-referrer"
-                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                              className="w-full h-full object-contain group-hover:scale-102 transition-transform duration-300"
                             />
                             {prod.status === "inactive" && (
                               <span className="absolute inset-0 bg-black/60 flex items-center justify-center text-[10px] font-mono font-bold text-red-500 tracking-wider">
@@ -921,7 +954,6 @@ export default function App() {
                           </div>
 
                           <div>
-                            <span className="text-[8px] font-mono tracking-widest text-emerald-400 block font-bold uppercase">ID: {prod.id}</span>
                             <h4 className="text-xs font-bold font-display text-white line-clamp-1 group-hover:text-emerald-400 transition-colors">
                               {prod.name}
                             </h4>
@@ -1066,7 +1098,7 @@ export default function App() {
                     <span className="text-[10px] font-mono font-bold tracking-widest text-emerald-400 uppercase block">Capital Refunding Desk</span>
                     <h3 className="text-lg font-bold font-display text-white">Deposit Secure Assets</h3>
                     <p className="text-xs text-zinc-400 leading-relaxed">
-                      Refuel your capital pool balance instantly. Minimum: <span className="font-mono text-white">1,500 IQD</span>, Maximum: <span className="font-mono text-white">100,000 IQD</span>. Review escrow details provided below, make transfer, and submit Transaction Hash details to the audit board.
+                      Refuel your capital pool balance instantly. Minimum: <span className="font-mono text-white">5,000 IQD</span>, Maximum: <span className="font-mono text-white">30,000 IQD</span>. Review escrow details provided below, make transfer, and submit Transaction Hash details to the audit board.
                     </p>
                   </div>
 
@@ -1125,8 +1157,8 @@ export default function App() {
                         <input 
                           type="number" 
                           required 
-                          min="1500" 
-                          max="100000"
+                          min="5000" 
+                          max="30000"
                           value={depositAmount} 
                           onChange={(e) => setDepositAmount(e.target.value)} 
                           placeholder="5000"
@@ -1141,8 +1173,9 @@ export default function App() {
                           className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-2.5 py-2 text-xs text-white outline-none"
                         >
                           <option value="USDT (TRC20)">USDT (TRC20)</option>
-                          <option value="Bank Wire">Domestic Bank Wire</option>
-                          <option value="USDT (ERC20)">USDT (ERC20)</option>
+                          <option value="USDT (BEP20)">USDT (BEP20)</option>
+                          <option value="Binance ID">Binance ID</option>
+                          <option value="Iraq Bank Account">Iraq Bank Account</option>
                         </select>
                       </div>
                     </div>
@@ -1160,6 +1193,42 @@ export default function App() {
                       <p className="text-[8px] text-zinc-500 mt-1 pl-1">
                         Provide the clear transaction hash generated from your crypto wallet or bank payload.
                       </p>
+                    </div>
+
+                    <div>
+                      <label className="block text-[10px] font-medium text-zinc-500 mb-1">Upload Receipt Screenshot</label>
+                      <div className="flex flex-col gap-2">
+                        <label className="flex items-center justify-center gap-1.5 py-2 px-3 bg-zinc-950 border border-dashed border-zinc-800 hover:border-zinc-750 text-zinc-400 text-xs font-medium rounded-xl cursor-pointer transition-colors">
+                          <input 
+                            type="file" 
+                            accept="image/*"
+                            className="hidden"
+                            onChange={(e) => {
+                              const file = e.target.files?.[0];
+                              if (file) {
+                                const reader = new FileReader();
+                                reader.onloadend = () => {
+                                  setScreenshotPreview(reader.result as string);
+                                };
+                                reader.readAsDataURL(file);
+                              }
+                            }}
+                          />
+                          <span>{screenshotPreview ? "Change Receipt Screenshot" : "Upload Screenshot (Proof of Payment)"}</span>
+                        </label>
+                        {screenshotPreview && (
+                          <div className="relative w-full max-h-40 rounded-xl overflow-hidden border border-zinc-800">
+                            <img src={screenshotPreview} alt="Screenshot preview" className="w-full h-full object-contain" />
+                            <button 
+                              type="button"
+                              onClick={() => setScreenshotPreview(null)}
+                              className="absolute top-1.5 right-1.5 p-1 bg-black/60 text-white rounded-full hover:bg-black/80 text-[10px]"
+                            >
+                              ✕ Remove
+                            </button>
+                          </div>
+                        )}
+                      </div>
                     </div>
 
                     <button
@@ -1215,13 +1284,13 @@ export default function App() {
 
             {financialSubTab === "withdraw" && (
               <div className="space-y-6">
-                {/* INTEGRATED WITHDRAW MODULE (Minimum: 5,000, Maximum: 30,000, minus 18% GST deducted from balance!) */}
+                {/* INTEGRATED WITHDRAW MODULE (Minimum: 5,000, Maximum: Unlimited, minus 18% GST deducted from balance!) */}
                 <div className="bg-zinc-900 border border-zinc-800 rounded-[1.5rem] p-5 space-y-4 shadow-xl">
                   <div className="space-y-1">
                     <span className="text-[10px] font-mono font-bold tracking-widest text-emerald-400 uppercase block">Secure Payout Portal</span>
                     <h3 className="text-lg font-bold font-display text-white">Request Digital Withdrawal</h3>
                     <p className="text-xs text-zinc-400 leading-relaxed">
-                      Convert compounding asset dividends to raw capital. Limit: <span className="font-mono text-white">5,000 IQD</span> - <span className="font-mono text-white">30,000 IQD</span> per transaction.
+                      Convert compounding asset dividends to raw capital. Minimum: <span className="font-mono text-white">5,000 IQD</span> (Maximum: Unlimited).
                     </p>
                     <div className="p-3 bg-zinc-950 border border-zinc-850 rounded-xl text-xs font-mono space-y-1 text-zinc-400">
                       <p className="text-[11px] text-white font-sans font-bold flex items-center gap-1">
@@ -1243,7 +1312,6 @@ export default function App() {
                           type="number" 
                           required 
                           min="5000" 
-                          max="30000"
                           value={withdrawAmount} 
                           onChange={(e) => setWithdrawAmount(e.target.value)} 
                           placeholder="10000"
@@ -1283,6 +1351,44 @@ export default function App() {
                       {actionLoading ? "QUEUING TRANSFER..." : "AUTHORIZE CASHOUT DISBURSEMENT"}
                     </button>
                   </form>
+                </div>
+
+                {/* WITHDRAWAL COMPLIANCE RULES BOX */}
+                <div className="bg-zinc-900/60 border border-zinc-800/80 rounded-[1.5rem] p-5 space-y-3 shadow-lg font-sans">
+                  <div className="flex items-center gap-2 pb-1.5 border-b border-zinc-800">
+                    <ShieldAlert className="w-4 h-4 text-emerald-500 shrink-0" />
+                    <span className="text-[10px] font-bold uppercase tracking-wider font-mono text-white">Withdrawal Rules & Guidelines</span>
+                  </div>
+                  <ul className="space-y-2 text-[11px] text-zinc-400 leading-relaxed list-none pl-0">
+                    <li className="flex items-start gap-1.5">
+                      <span className="text-emerald-500 font-bold shrink-0">•</span>
+                      <span>The minimum withdrawal is <strong>5,000 Iraqi dinars</strong>; the maximum withdrawal is <strong>unlimited</strong>.</span>
+                    </li>
+                    <li className="flex items-start gap-1.5">
+                      <span className="text-emerald-500 font-bold shrink-0">•</span>
+                      <span>Withdrawal hours are from <strong>9:00 AM to 9:00 PM daily</strong>.</span>
+                    </li>
+                    <li className="flex items-start gap-1.5">
+                      <span className="text-emerald-500 font-bold shrink-0">•</span>
+                      <span>Withdrawals are unlimited; multiple withdrawals are allowed per day.</span>
+                    </li>
+                    <li className="flex items-start gap-1.5">
+                      <span className="text-emerald-500 font-bold shrink-0">•</span>
+                      <span>Withdrawal fees are <strong>18%</strong>.</span>
+                    </li>
+                    <li className="flex items-start gap-1.5">
+                      <span className="text-emerald-500 font-bold shrink-0">•</span>
+                      <span>Withdrawals are processed within a minimum of two hours, and within 24 hours in exceptional cases.</span>
+                    </li>
+                    <li className="flex items-start gap-1.5 pt-1">
+                      <span className="text-rose-450 text-[10px] shrink-0">⚠️</span>
+                      <span className="text-zinc-300">Please enter your withdrawal account information correctly. Incorrect information will result in the withdrawal process failing.</span>
+                    </li>
+                    <li className="flex items-start gap-1.5 border-t border-zinc-850/50 pt-2.5 mt-2">
+                      <span className="text-emerald-500 text-xs shrink-0">🛡️</span>
+                      <span className="text-emerald-400 text-[10px] font-medium font-mono">To protect the rights and interests of the platform and users, you must have at least one device to activate the withdrawal feature.</span>
+                    </li>
+                  </ul>
                 </div>
 
                 {/* WITHDRAWAL DISBURSALS LISTING IN SEPARATED BLOCK */}
@@ -1622,6 +1728,14 @@ export default function App() {
                             <p className="text-zinc-400">Phone: <strong className="text-zinc-200">{item.phone}</strong></p>
                             <p className="text-zinc-400">Hash/TXID: <strong className="text-emerald-400 break-all">{item.txid}</strong></p>
                           </div>
+                          {item.screenshot && (
+                            <div className="mt-1 pb-1">
+                              <p className="text-zinc-400 mb-1">Receipt proof screenshot (click to view):</p>
+                              <a href={item.screenshot} target="_blank" rel="noopener noreferrer" className="inline-block p-1 bg-zinc-950 border border-zinc-800 rounded hover:border-zinc-700">
+                                <img src={item.screenshot} alt="Payment receipt" className="max-h-20 max-w-full object-contain" />
+                              </a>
+                            </div>
+                          )}
                           <div className="flex gap-2 justify-end pt-1">
                             <button
                               onClick={() => handleApproveDeposit(item.id)}
@@ -2114,7 +2228,7 @@ export default function App() {
           {/* Overlay Background */}
           <div 
             className="absolute inset-0 bg-black/80 backdrop-blur-sm"
-            onClick={() => setShowNoticeModal(false)}
+            onClick={closeNoticeModal}
           ></div>
           
           {/* Modal Card Container */}
@@ -2207,7 +2321,7 @@ export default function App() {
               </div>
               
               <button
-                onClick={() => setShowNoticeModal(false)}
+                onClick={closeNoticeModal}
                 className="w-full py-2.5 bg-zinc-950 hover:bg-zinc-900 text-white text-xs font-bold tracking-widest uppercase rounded-xl transition-colors text-center cursor-pointer shadow-md"
               >
                 Close
@@ -2237,11 +2351,8 @@ export default function App() {
                 src={selectedProductDetail.image || "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=600&q=80"} 
                 alt={selectedProductDetail.name}
                 referrerPolicy="no-referrer"
-                className="w-full h-full object-cover"
+                className="w-full h-full object-contain"
               />
-              <span className="absolute top-2.5 left-2.5 text-[8px] font-mono bg-zinc-950/80 text-emerald-400 px-2 py-0.5 rounded-full uppercase font-bold border border-zinc-850">
-                Tier Code: {selectedProductDetail.id}
-              </span>
             </div>
 
             {/* Header / Info */}

@@ -56,6 +56,7 @@ export interface DepositRequest {
   txid: string;         // user entered transaction detail (e.g. ID / hash)
   status: 'pending' | 'approved' | 'rejected';
   adminReason?: string; // set if rejected
+  screenshot?: string;  // optional screenshot base64 / URL
   createdAt: string;
 }
 

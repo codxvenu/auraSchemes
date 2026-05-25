@@ -59,10 +59,10 @@ export const auraApi = {
     return apiFetch<{ deposits: DepositRequest[]; withdrawals: WithdrawalRequest[] }>("/api/financial/my-transactions");
   },
 
-  async submitDeposit(amount: number, method: string, txid: string): Promise<{ success: boolean; deposit: DepositRequest }> {
+  async submitDeposit(amount: number, method: string, txid: string, screenshot?: string): Promise<{ success: boolean; deposit: DepositRequest }> {
     return apiFetch<{ success: boolean; deposit: DepositRequest }>("/api/financial/deposit", {
       method: "POST",
-      body: JSON.stringify({ amount, method, txid })
+      body: JSON.stringify({ amount, method, txid, screenshot })
     });
   },
 
