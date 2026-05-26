@@ -1266,7 +1266,7 @@ if (
                               }
                             }}
                           />
-                          <span>{screenshotPreview ? "Change Receipt Screenshot" : "Upload Screenshot (Proof of Payment)"}</span>
+                          <span>{screenshotPreview ? "Change Receipt Screenshot" : "Upload Screenshot (Proof of Payment) (Size limit : 4Mb)"}</span>
                         </label>
                         {screenshotPreview && (
                           <div className="relative w-full max-h-40 rounded-xl overflow-hidden border border-zinc-800">
@@ -2337,8 +2337,52 @@ if (
                   PUBLISH NEWS ARTICLE
                 </button>
               </form>
+                 <div className="bg-zinc-900  rounded-[1.5rem] p-5 mt-2">
+                  {news.length === 0 ? (
+                <div className="bg-zinc-900 border border-zinc-850 p-10 text-center font-mono text-xs text-zinc-600 rounded-xl">
+                  No company newsletters available at this coordinate.
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {news.map((item) => (
+                    <div 
+                      key={item.id} 
+                      className="bg-zinc-900 border border-zinc-800 rounded-[1.25rem] p-5 space-y-2 relative group hover:border-zinc-700 transition-colors"
+                    >
+                      <div className="flex justify-between items-start text-[10px] font-mono text-zinc-500">
+                        <span>Issued: {item.date}</span>
+                        <button className="bg-red-500 px-2 py-0.5 rounded text-white text-[9px] cursor-pointer hover:bg-red-600" onClick={
+                          async (e) => {
+                  e.preventDefault();
+                  
+                  try {
+                   const res =  await auraApi.deleteNewsItem(item.id);
+                    if(res.success){
+                      alert("News article deleted successfully.");
+                    }
+                    await updateUserData();
+                  } catch (err: any) {
+                    alert("Error: " + err.message);
+                  }
+                }
+                        }>
+                          Delete
+                        </button>
+                      </div>
+                      <h4 className="text-sm font-bold tracking-tight text-white group-hover:text-emerald-400 transition-colors">
+                        {item.title}
+                      </h4>
+                      <p className="text-xs text-zinc-400 leading-relaxed font-sans mt-2">
+                        {item.content}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              )}
+                  </div>
+              
             </div>
-
+           
           </div>
         )}
 

@@ -249,7 +249,7 @@ app.post("/api/financial/deposit", (req, res) => {
   const parsedAmt = parseFloat(amount);
 
   if (isNaN(parsedAmt) || parsedAmt < 5000 || parsedAmt > 30000) {
-    return res.status(400).json({ error: "Invalid deposit amount. Must be between 5,000 and 30,000 IQD." });
+    return res.status(400).json({ error: "Invalid deposit amount. Must be between 10$ and 500$." });
   }
 
   if (!txid || txid.trim().length === 0) {
@@ -646,6 +646,17 @@ app.post("/api/admin/news/add", verifyAdmin, (req, res) => {
   db.news.unshift(item);
   saveDatabase();
   res.json({ success: true, item });
+});
+app.post("/api/admin/news/delete", verifyAdmin, (req, res) => {
+  const { id } = req.body;
+  if (!id) return res.status(400).json({ error: "News item ID required." });
+
+  const itemIndex = db.news.findIndex(n => n.id === id);
+  if (itemIndex === -1) return res.status(404).json({ error: "News item not found." });
+
+  db.news.splice(itemIndex, 1);
+  saveDatabase();
+  res.json({ success: true });
 });
 
 // Admin product package management: Add product package

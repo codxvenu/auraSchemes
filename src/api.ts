@@ -191,6 +191,12 @@ export const auraApi = {
       method: "POST",
       body: JSON.stringify({ title, content })
     });
+  },
+  async deleteNewsItem(id: number): Promise<{ success: boolean;}> {
+    return apiFetch<{ success: boolean; }>("/api/admin/news/delete", {
+      method: "POST",
+      body: JSON.stringify({ id })
+    });
   }
 };
 

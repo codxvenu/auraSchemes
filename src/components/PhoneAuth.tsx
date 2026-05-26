@@ -9,8 +9,10 @@ interface PhoneAuthProps {
 
 export default function PhoneAuth({ onAuthSuccess }: PhoneAuthProps) {
   const [isLogin, setIsLogin] = useState(true);
+  const [forgotpass, setForgotPass] = useState(false);
   
   // Country Codes Selection
+
   const [countryCode, setCountryCode] = useState("+964");
   const [phoneNumber, setPhoneNumber] = useState("");
   const [password, setPassword] = useState("");
@@ -85,6 +87,24 @@ export default function PhoneAuth({ onAuthSuccess }: PhoneAuthProps) {
       setLoading(false);
     }
   };
+  const handleForgotPasswordSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+    setSuccess(null);
+    setLoading(true);
+
+    try {
+        const res = await auraApi.updateProfile(username, password || undefined);
+        if (res.success) {
+        setSuccess("Password reset successful.");
+      }
+    } catch (err: any) {
+      setError(err.message || "An auth error occurred.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
 
   return (
     <div id="phone-auth-container" className="flex flex-col items-center justify-center min-h-[92vh] px-4 py-8">
@@ -99,12 +119,13 @@ export default function PhoneAuth({ onAuthSuccess }: PhoneAuthProps) {
 
       <div className="w-full max-w-md bg-zinc-900/60 border border-zinc-800/80 rounded-[1.50rem] overflow-hidden backdrop-blur-xl shadow-2xl p-6 md:p-8">
         {/* Navigation Selector */}
-        <div className="flex bg-zinc-950 p-1.5 rounded-xl gap-1 mb-6">
-          <button
-            type="button"
-            id="btn-tab-login"
-            onClick={() => {
-              setIsLogin(true);
+        {!forgotpass && (
+          <div className="flex bg-zinc-950 p-1.5 rounded-xl gap-1 mb-6">
+            <button
+              type="button"
+              id="btn-tab-login"
+              onClick={() => {
+                setIsLogin(true);
               setError(null);
               setSuccess(null);
             }}
@@ -132,7 +153,7 @@ export default function PhoneAuth({ onAuthSuccess }: PhoneAuthProps) {
           >
             Register Account
           </button>
-        </div>
+        </div>)}
 
         {/* Informative Alerts */}
         {error && (
@@ -150,7 +171,8 @@ export default function PhoneAuth({ onAuthSuccess }: PhoneAuthProps) {
         )}
 
         {/* Authenticate Input Form */}
-        <form onSubmit={handleAuthSubmit} className="space-y-4">
+       { !forgotpass  && (
+         <form onSubmit={handleAuthSubmit} className="space-y-4">
           
           {!isLogin && (
             <div>
@@ -285,18 +307,100 @@ export default function PhoneAuth({ onAuthSuccess }: PhoneAuthProps) {
               </>
             )}
           </button>
-        </form>
+        </form>)}
+       {forgotpass && (
+         <form onSubmit={handleForgotPasswordSubmit} className="space-y-4">
+          
+
+          <div>
+            <label className="block text-xs font-medium text-zinc-400 mb-1.5 font-sans">
+              OTP-Send On Phone Number
+            </label>
+            <div className="flex gap-2">
+              <div className="relative flex-1">
+                <span className="absolute inset-y-0 left-0 flex items-center pl-3.5 text-zinc-500">
+                  <Phone className="w-4 h-4" />
+                </span>
+                <input
+                  type="tel"
+                  required
+                  id="auth-phone-num"
+                  value={phoneNumber}
+                  onChange={(e) => setPhoneNumber(e.target.value)}
+                  placeholder="0 0 0 0"
+                  className="w-full bg-zinc-950 border border-zinc-800 hover:border-zinc-700/80 focus:border-zinc-600 rounded-xl py-2.5 pl-10 pr-4 text-sm text-white font-mono placeholder-zinc-600 outline-none transition-colors"
+                />
+              </div>
+            </div>
+          </div>
+
+
+          <div>
+            <label className="block text-xs font-medium text-zinc-400 mb-1.5 font-sans">
+              Username
+            </label>
+            <div className="relative">
+              <span className="absolute inset-y-0 left-0 flex items-center pl-3.5 text-zinc-500">
+                <Lock className="w-4 h-4" />
+              </span>
+              <input
+                type="text"
+                required
+                id="auth-username"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                placeholder="••••••••••••"
+                className="w-full bg-zinc-950 border border-zinc-800 hover:border-zinc-700/80 focus:border-zinc-600 rounded-xl py-2.5 pl-10 pr-4 text-sm text-white placeholder-zinc-600 outline-none transition-colors"
+              />
+            </div>
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-zinc-400 mb-1.5 font-sans">
+              New Secure Password
+            </label>
+            <div className="relative">
+              <span className="absolute inset-y-0 left-0 flex items-center pl-3.5 text-zinc-500">
+                <Lock className="w-4 h-4" />
+              </span>
+              <input
+                type="password"
+                required
+                id="auth-password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="••••••••••••"
+                className="w-full bg-zinc-950 border border-zinc-800 hover:border-zinc-700/80 focus:border-zinc-600 rounded-xl py-2.5 pl-10 pr-4 text-sm text-white placeholder-zinc-600 outline-none transition-colors"
+              />
+            </div>
+          </div>
+          <button
+            type="submit"
+            id="btn-auth-submit"
+            disabled={loading}
+            className="w-full mt-4 bg-white text-zinc-950 hover:bg-zinc-200 font-medium text-sm py-2.5 rounded-xl transition-all flex items-center justify-center gap-1.5 shadow-lg active:scale-98 disabled:opacity-50 disabled:pointer-events-none cursor-pointer"
+          >
+            {loading ? (
+              <span className="w-5 h-5 border-2 border-zinc-900 border-t-transparent rounded-full animate-spin"></span>
+            ) : (
+              <>
+                Reset Password
+                <ArrowRight className="w-4 h-4 shrink-0" />
+              </>
+            )}
+          </button>
+        </form>)}
 
         <div className="mt-6 border-t border-zinc-800/80 pt-4 flex flex-col gap-2.5 text-xs text-zinc-500 text-center">
+        {!!forgotpass && (
           <div>
             {isLogin ? (
               <p>
-                Don't have an affiliate invitation?{" "}
+                Forgot your password?{" "}
                 <button
-                  onClick={() => setIsLogin(false)}
+                  onClick={() => setForgotPass(true)}
                   className="text-zinc-300 hover:underline hover:text-white"
                 >
-                  Apply Invite Code
+                  Reset Password
                 </button>
               </p>
             ) : (
@@ -310,7 +414,7 @@ export default function PhoneAuth({ onAuthSuccess }: PhoneAuthProps) {
                 </button>
               </p>
             )}
-          </div>
+          </div>)}
         </div>
       </div>
 
