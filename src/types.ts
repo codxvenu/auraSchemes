@@ -76,7 +76,9 @@ export interface AdminSettings {
     bankName: string;
     accountNumber: string;
     accountName: string;
-    usdtAddress: string;
+    trc: string;
+    bep: string;
+    binance: string;
     instructions: string;
   };
 }
@@ -88,3 +90,12 @@ export interface ForumNews {
   date: string;
   author: string;
 }
+export type PaymentDetails =
+  | string
+  | {
+      type: "bank";
+      accountName: string;
+      accountNumber: string;
+      ifsc: string;
+      bankName: string;
+    };

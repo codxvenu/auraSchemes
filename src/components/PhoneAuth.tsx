@@ -11,7 +11,7 @@ export default function PhoneAuth({ onAuthSuccess }: PhoneAuthProps) {
   const [isLogin, setIsLogin] = useState(true);
   
   // Country Codes Selection
-  const [countryCode, setCountryCode] = useState("+91");
+  const [countryCode, setCountryCode] = useState("+1");
   const [phoneNumber, setPhoneNumber] = useState("");
   const [password, setPassword] = useState("");
   const [username, setUsername] = useState("");
@@ -314,46 +314,7 @@ export default function PhoneAuth({ onAuthSuccess }: PhoneAuthProps) {
         </div>
       </div>
 
-      {/* Simulator Interface Panel - EXTREMELY HELPFUL TO DEMAND REQUIREMENT (referrals) */}
-      <div className="w-full max-w-md bg-zinc-950/80 border border-zinc-800/60 rounded-xl p-5 mt-6 font-sans">
-        <div className="flex items-center gap-2 mb-2 text-xs font-semibold text-zinc-300">
-          <HelpCircle className="w-4 h-4 text-emerald-500 shrink-0" />
-          Aura Sandbox Dev-Controls (Click to Test):
-        </div>
-        <p className="text-[11px] text-zinc-500 mb-3 leading-relaxed">
-          The user is strictly blocked from registering without a valid referrer. Click a code below to simulate arriving via a real referral URL.
-        </p>
-
-        <div className="grid grid-cols-2 gap-2 text-[11px]">
-          <button
-            onClick={() => simulateReferralClick("AURA")}
-            className="px-3 py-2 bg-zinc-900 border border-zinc-800 hover:border-zinc-700 hover:bg-zinc-800 text-zinc-300 rounded-lg text-left"
-          >
-            <span className="block font-semibold text-emerald-400">Code: AURA</span>
-            <span className="text-[10px] text-zinc-500">Official CEO Sponsor</span>
-          </button>
-          
-          <button
-            onClick={() => {
-              setReferralCode("");
-              setIsReferralReadOnly(false);
-              setIsLogin(false);
-              setSuccess(null);
-              setError("Simulated clear. Referral field is open again. Form is on registration.");
-            }}
-            className="px-3 py-2 bg-zinc-900 border border-zinc-800 hover:border-rose-950 hover:bg-zinc-800 text-zinc-400 rounded-lg text-left"
-          >
-            <span className="block font-semibold text-rose-400">Clear Referral</span>
-            <span className="text-[10px] text-zinc-500">Unlocks input field</span>
-          </button>
-        </div>
-
-        <div className="mt-3.5 bg-zinc-900/40 p-2.5 rounded-lg border border-zinc-800/50 text-[10px] text-zinc-500">
-          <span className="text-zinc-300 font-mono font-medium block mb-1">🔑 Sandbox Accounts Pre-seeded:</span>
-          • Admin: <span className="font-mono text-white">+1111111111</span> (p: <span className="font-mono text-white">admin</span>) — <span className="text-emerald-400">Admin Control</span><br/>
-          • Recommender Code: <span className="font-mono text-white">AURA</span> (Registered to admin)
-        </div>
-      </div>
+   
     </div>
   );
 }

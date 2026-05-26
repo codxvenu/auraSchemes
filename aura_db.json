@@ -4,7 +4,7 @@
       "phone": "+1111111111",
       "username": "Aura CEO",
       "referralCode": "AURA",
-      "balance": 10000,
+      "balance": 153000,
       "role": "admin",
       "createdAt": "2026-05-26T04:23:48.968Z",
       "spins": 1
@@ -71,15 +71,61 @@
       "rating": 5
     }
   ],
-  "investments": [],
+  "investments": [
+    {
+      "id": "INV-1779778175959-956",
+      "phone": "+1111111111",
+      "userId": "+1111111111",
+      "productId": "s1",
+      "productName": "S1",
+      "price": 10000,
+      "purchaseAmount": 10000,
+      "dailyIncome": 1000,
+      "dailyEarning": 1000,
+      "earnedSoFar": 63000,
+      "totalIncome": 90000,
+      "durationDays": 90,
+      "daysPassed": 63,
+      "status": "active",
+      "createdAt": "2026-05-26T06:49:35.959Z",
+      "startDate": "2026-05-26T06:49:35.959Z",
+      "endDate": "2026-08-24T06:49:35.959Z",
+      "lastCollectAt": "2026-05-26T07:36:50.959Z"
+    }
+  ],
   "deposits": [],
-  "withdrawals": [],
+  "withdrawals": [
+    {
+      "id": "WITH-1779778290765",
+      "phone": "+1111111111",
+      "amount": 5000,
+      "deductedAmount": 5900,
+      "status": "pending",
+      "createdAt": "2026-05-26T06:51:30.765Z",
+      "paymentDetails": {
+        "bankName": "Aura Global Liquidity Bank",
+        "accountNumber": "9100-2443-8822-09",
+        "cardHolderName": "name"
+      }
+    },
+    {
+      "id": "WITH-1779778841415",
+      "phone": "+1111111111",
+      "amount": 5000,
+      "deductedAmount": 5900,
+      "status": "pending",
+      "createdAt": "2026-05-26T07:00:41.415Z",
+      "paymentDetails": "slsjcks"
+    }
+  ],
   "adminSettings": {
     "paymentDetails": {
       "bankName": "Aura Global Liquidity Bank",
       "accountNumber": "9100-2443-8822-09",
       "accountName": "Aura Escrow Services LLC",
-      "usdtAddress": "TY9H2jKw87hsdKKjsdf8892hhKasdk",
+      "trc": "TY9H2jKw87hsdKKjsdf8892hhKasdk",
+      "bep": "TY9H2jKw87hsdKKjsdf8892hhKasdk",
+      "binance": "TY9H2jKw87hsdKKjsdf8892hhKasdk",
       "instructions": "Transfer the amount via USDT (TRC20) or your Local Bank Account. Enter your exact Transaction Hash/TXID or Transfer reference below. The Admin will review and credit your balance within 10 minutes."
     }
   },

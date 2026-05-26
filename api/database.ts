@@ -36,7 +36,9 @@ let db: DatabaseSchema = {
       bankName: "Aura Global Liquidity Bank",
       accountNumber: "9100-2443-8822-09",
       accountName: "Aura Escrow Services LLC",
-      usdtAddress: "TY9H2jKw87hsdKKjsdf8892hhKasdk",
+      trc: "TY9H2jKw87hsdKKjsdf8892hhKasdk",
+      bep: "TY9H2jKw87hsdKKjsdf8892hhKasdk",
+      binance: "TY9H2jKw87hsdKKjsdf8892hhKasdk",
       instructions: "Transfer the amount via USDT (TRC20) or your Local Bank Account. Enter your exact Transaction Hash/TXID or Transfer reference below. The Admin will review and credit your balance within 10 minutes."
     }
   },
@@ -134,7 +136,7 @@ function seedDatabase() {
 
 // MySQL connection pool holder
 let pool: mysql.Pool | null = null;
-const isMySqlConfigured = true;
+const isMySqlConfigured = false;
 
 if (isMySqlConfigured) {
   const host = "localhost";
@@ -256,7 +258,9 @@ async function setupMySQLTables() {
         bankName VARCHAR(100),
         accountNumber VARCHAR(100),
         accountName VARCHAR(100),
-        usdtAddress VARCHAR(255),
+        trc VARCHAR(255),
+        bep VARCHAR(255),
+        binance VARCHAR(255),
         instructions TEXT
       )
     `);
@@ -368,7 +372,9 @@ export async function syncFromMySQL() {
           bankName: settingsRows[0].bankName || "",
           accountNumber: settingsRows[0].accountNumber || "",
           accountName: settingsRows[0].accountName || "",
-          usdtAddress: settingsRows[0].usdtAddress || "",
+          trc: settingsRows[0].trc || "",
+          bep: settingsRows[0].bep || "",
+          binance: settingsRows[0].binance || "",
           instructions: settingsRows[0].instructions || ""
         }
       };
@@ -469,7 +475,7 @@ export async function syncToMySQL() {
           status = VALUES(status),
           adminReason = VALUES(adminReason)
       `, [
-        w.id, w.phone, w.amount, w.deductedAmount, w.status, w.adminReason || null, w.paymentDetails, w.createdAt
+        w.id, w.phone, w.amount, w.deductedAmount, w.status, w.adminReason || null, JSON.stringify(w.paymentDetails), w.createdAt
       ]);
     }
 
@@ -491,16 +497,18 @@ export async function syncToMySQL() {
     // 7. Save Admin Settings
     const s = db.adminSettings.paymentDetails;
     await pool.query(`
-      INSERT INTO admin_settings (id, bankName, accountNumber, accountName, usdtAddress, instructions)
-      VALUES (1, ?, ?, ?, ?, ?)
+      INSERT INTO admin_settings (id, bankName, accountNumber, accountName, trc, bep, binance, instructions)
+      VALUES (1, ?, ?, ?, ?, ?, ?, ?)
       ON DUPLICATE KEY UPDATE
         bankName = VALUES(bankName),
         accountNumber = VALUES(accountNumber),
         accountName = VALUES(accountName),
-        usdtAddress = VALUES(usdtAddress),
+        trc = VALUES(trc),
+        bep = VALUES(bep),
+        binance = VALUES(binance),
         instructions = VALUES(instructions)
     `, [
-      s.bankName, s.accountNumber, s.accountName, s.usdtAddress, s.instructions
+      s.bankName, s.accountNumber, s.accountName, s.trc, s.bep, s.binance, s.instructions
     ]);
 
   } catch (err) {

@@ -65,6 +65,7 @@ export default function App() {
   const [depositAmount, setDepositAmount] = useState<string>("5000");
   const [depositTxid, setDepositTxid] = useState<string>("");
   const [depositMethod, setDepositMethod] = useState<string>("USDT (TRC20)");
+  const [withdrawMethod, setWithdrawMethod] = useState<string>("USDT (TRC20)");
   const [screenshotPreview, setScreenshotPreview] = useState<string | null>(null);
   const [withdrawAmount, setWithdrawAmount] = useState<string>("5000");
   const [withdrawalPaymentDetails, setWithdrawalPaymentDetails] = useState<string>("");
@@ -131,7 +132,7 @@ export default function App() {
       try {
         const res = await auraApi.getMe();
         setUser(res.user);
-        await updateUserData();
+        await updateUserData(res.user);
       } catch (err) {
         console.error("Token invalid or expired. Resetting.", err);
         localStorage.removeItem("aura_token");
@@ -147,6 +148,7 @@ export default function App() {
 
   // Periodic user profile & state synchronization to capture real-time passive mining rewards instantly (every 4 seconds)
   useEffect(() => {
+    console.log(user)
     let interval: any = null;
     if (user && token) {
       interval = setInterval(async () => {
@@ -198,8 +200,9 @@ export default function App() {
   };
 
   // Main UI Data Syncer
-  const updateUserData = async () => {
+  const updateUserData = async (updatedUser?: User ) => {
     if (!token) return;
+    
     try {
       // 1. Fetch products selection
       const prodRes = await auraApi.getProducts();
@@ -241,13 +244,13 @@ export default function App() {
       // 5. Fetch global bulletins news
       const newsRes = await auraApi.getNews();
       setNews(newsRes.news);
-
       // 6. If Admin, pull global metrics logs
-      if (user && user.role === 'admin') {
+      if (updatedUser && updatedUser.role === 'admin') {
         const adminData = await auraApi.getAdminMetrics();
         setAdminUsers(adminData.users);
         setAdminDeposits(adminData.deposits);
         setAdminWithdrawals(adminData.withdrawals);
+        console.log(adminData,"admindata");
         setAdminInvestments(adminData.investments);
       }
     } catch (err: any) {
@@ -410,7 +413,17 @@ export default function App() {
       return;
     }
 
-    if (!withdrawalPaymentDetails.trim()) {
+if (
+  !withdrawalPaymentDetails ||
+  (
+    typeof withdrawalPaymentDetails === "string" &&
+    withdrawalPaymentDetails.trim().length === 0
+  ) ||
+  (
+    typeof withdrawalPaymentDetails === "object" &&
+    Object.keys(withdrawalPaymentDetails).length === 0
+  )
+){
       setProfileError("Receiving address details are strictly required to execute transfers.");
       setActionLoading(false);
       return;
@@ -537,7 +550,9 @@ export default function App() {
         bankName: data.get("bankName") as string,
         accountNumber: data.get("accountNumber") as string,
         accountName: data.get("accountName") as string,
-        usdtAddress: data.get("usdtAddress") as string,
+        trc: data.get("trc") as string,
+        bep: data.get("bep") as string,
+        binance: data.get("binance") as string,
         instructions: data.get("instructions") as string,
       };
       await auraApi.updateAdminSettings(payload);
@@ -1099,20 +1114,54 @@ export default function App() {
                   {adminSettings ? (
                     <div className="bg-zinc-950 border border-zinc-850 p-4 rounded-xl space-y-3 font-sans">
                       <div className="flex justify-between items-center pb-2 border-b border-zinc-900">
-                        <span className="text-xs font-bold text-zinc-300">Target Crypto USDT (TRC-20)</span>
                         <span className="text-[9px] bg-emerald-950 text-emerald-400 px-2 py-0.5 rounded-full font-mono">ONLINE</span>
                       </div>
                       
                       <div className="space-y-1.5 font-mono text-xs">
                         <div>
-                          <span className="text-[10px] text-zinc-500 font-sans block">Escrow Wallet Address:</span>
+                          <span className="text-[10px] text-zinc-500 font-sans block">Usdt Trc20 Wallet Address:</span>
                           <div className="flex gap-2 items-center">
-                            <span className="text-[11px] text-white break-all bg-zinc-900/40 p-1.5 rounded">{adminSettings.paymentDetails.usdtAddress}</span>
+                            <span className="text-[11px] text-white break-all bg-zinc-900/40 p-1.5 rounded">
+                            {adminSettings.paymentDetails.trc}</span>
                             <button 
                               type="button"
                               onClick={() => {
-                                navigator.clipboard.writeText(adminSettings.paymentDetails.usdtAddress);
+                                navigator.clipboard.writeText(adminSettings.paymentDetails.trc);
                                 alert("USDT Address saved to clipboard.");
+                              }}
+                              className="p-1.5 bg-zinc-900 hover:bg-zinc-850 font-mono text-xs text-zinc-400 hover:text-white rounded-lg cursor-pointer shrink-0 border border-zinc-800"
+                            >
+                              Copy
+                            </button>
+                          </div>
+                        </div>
+                        <div>
+                          <span className="text-[10px] text-zinc-500 font-sans block">Usdt BEP20  Wallet Address:</span>
+                          <div className="flex gap-2 items-center">
+                            <span className="text-[11px] text-white break-all bg-zinc-900/40 p-1.5 rounded">
+                            {adminSettings.paymentDetails.bep}</span>
+                            <button 
+                              type="button"
+                              onClick={() => {
+                                navigator.clipboard.writeText(adminSettings.paymentDetails.bep);
+                                alert("USDT Address saved to clipboard.");
+                              }}
+                              className="p-1.5 bg-zinc-900 hover:bg-zinc-850 font-mono text-xs text-zinc-400 hover:text-white rounded-lg cursor-pointer shrink-0 border border-zinc-800"
+                            >
+                              Copy
+                            </button>
+                          </div>
+                        </div>
+                        <div>
+                          <span className="text-[10px] text-zinc-500 font-sans block">binance Wallet Address:</span>
+                          <div className="flex gap-2 items-center">
+                            <span className="text-[11px] text-white break-all bg-zinc-900/40 p-1.5 rounded">
+                            {adminSettings.paymentDetails.binance}</span>
+                            <button 
+                              type="button"
+                              onClick={() => {
+                                navigator.clipboard.writeText(adminSettings.paymentDetails.binance);
+                                alert("Binance Address saved to clipboard.");
                               }}
                               className="p-1.5 bg-zinc-900 hover:bg-zinc-850 font-mono text-xs text-zinc-400 hover:text-white rounded-lg cursor-pointer shrink-0 border border-zinc-800"
                             >
@@ -1320,7 +1369,57 @@ export default function App() {
                         </div>
                       </div>
                     </div>
+                    <div>
+                        <label className="block text-[10px] font-medium text-zinc-500 mb-1">Transfer Gateway</label>
+                        <select
+                          value={withdrawMethod}
+                          onChange={(e) => setWithdrawMethod(e.target.value)}
+                          className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-2.5 py-2 text-xs text-white outline-none"
+                        >
+                          <option value="USDT (TRC20)">USDT (TRC20)</option>
+                          <option value="USDT (BEP20)">USDT (BEP20)</option>
+                          <option value="Binance ID">Binance ID</option>
+                          <option value="Iraq Bank Account">Iraq Bank Account</option>
+                        </select>
+                      </div>
 
+                   {withdrawMethod === "Iraq Bank Account" && (
+                    <div>
+                      <label className="block text-[10px] font-medium text-zinc-500 mb-1">Your Receiving Payout Details</label>
+                      <input 
+                        type="text" 
+                        required 
+                        name="bankName"
+                        value={withdrawalPaymentDetails.bankName} 
+                        onChange={(e) => setWithdrawalPaymentDetails((prev)=>({...prev,[e.target.name]:e.target.value}))} 
+                        placeholder="Bank Name"
+                        className="w-full bg-zinc-950 border border-zinc-800 focus:border-zinc-700/80 rounded-xl px-3 py-2 text-xs text-white font-mono outline-none"
+                      />
+                      <input 
+                        type="text" 
+                        required 
+                        name="accountNumber"
+                        value={withdrawalPaymentDetails.accountNumber} 
+                        onChange={(e) => setWithdrawalPaymentDetails((prev)=>({...prev,[e.target.name]:e.target.value}))} 
+                        placeholder="Acc number"
+                        className="w-full bg-zinc-950 border border-zinc-800 focus:border-zinc-700/80 rounded-xl px-3 py-2 text-xs text-white font-mono outline-none"
+                      />
+                      <input 
+                        type="text" 
+                        required 
+                        name="cardHolderName"
+                        value={withdrawalPaymentDetails.cardHolderName} 
+                        onChange={(e) => setWithdrawalPaymentDetails((prev)=>({...prev,[e.target.name]:e.target.value}))} 
+                        placeholder="card holder name"
+                        className="w-full bg-zinc-950 border border-zinc-800 focus:border-zinc-700/80 rounded-xl px-3 py-2 text-xs text-white font-mono outline-none"
+                      />
+                      <p className="text-[8px] text-zinc-500 mt-1 pl-1">
+                        Ensure exact alphanumeric accuracy to prevent complete non-reversible capital transmission loss.
+                      </p>
+                    </div>
+                    )
+                    }
+                   {withdrawMethod !== "Iraq Bank Account" && (
                     <div>
                       <label className="block text-[10px] font-medium text-zinc-500 mb-1">Your Receiving Payout Details</label>
                       <input 
@@ -1335,6 +1434,8 @@ export default function App() {
                         Ensure exact alphanumeric accuracy to prevent complete non-reversible capital transmission loss.
                       </p>
                     </div>
+                    )
+                    }
 
                     <button
                       type="submit"
@@ -1402,7 +1503,12 @@ export default function App() {
                               <span className="font-bold text-xs">{formatCurrency(item.amount)}</span>
                               <span className="text-[9px] text-rose-400">({formatCurrency(item.deductedAmount)} deducted)</span>
                             </div>
+                           {typeof item.paymentDetails === 'string' && (
                             <span className="text-zinc-550 block text-[9px] truncate max-w-[210px] mt-0.5">Addr: {item.paymentDetails}</span>
+                           )}
+                           {typeof item.paymentDetails === 'object' && item.paymentDetails !== null && (
+                            <span className="text-zinc-550 block text-[9px] truncate max-w-[210px] mt-0.5">Addr: {Object.values(item.paymentDetails).join(" : ")}</span>
+                           )}
                             {item.adminReason && (
                               <span className="block text-rose-400 text-[9px] mt-1.5 bg-rose-950/20 border border-rose-900/30 p-1 rounded font-sans">
                                 ⚠️ Reject Code: "{item.adminReason}"
@@ -1779,7 +1885,15 @@ export default function App() {
                           </div>
                           <div>
                             <p className="text-zinc-400">Phone: <strong className="text-zinc-200">{item.phone}</strong></p>
-                            <p className="text-zinc-400">Recipient Details: <strong className="text-rose-300 break-all">{item.paymentDetails}</strong></p>
+                           {typeof item.paymentDetails === 'string' ? (
+                              <p className="text-zinc-400">Recipient Details: <strong className="text-rose-300 break-all">
+                              Trxn ID :  {item.paymentDetails}
+                              </strong></p>
+                            ) : (
+                              <p className="text-zinc-400">Recipient Details: <strong className="text-rose-300 break-all">
+                              AccNo:  {item.paymentDetails.accountNumber} <br/> BankName: ({item.paymentDetails.bankName})
+                              </strong></p>
+                            )}
                           </div>
                           <div className="flex gap-2 justify-end pt-1">
                             <button
@@ -1849,7 +1963,25 @@ export default function App() {
                     <input 
                       type="text" 
                       name="usdtAddress"
-                      defaultValue={adminSettings.paymentDetails.usdtAddress}
+                      defaultValue={adminSettings.paymentDetails.trc}
+                      className="w-full bg-zinc-950 border border-zinc-800 rounded-lg p-2 text-white font-mono outline-none animate-[pulse-slow]"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-zinc-500 mb-0.5">USDT Receiving Address (BEP20)</label>
+                    <input 
+                      type="text" 
+                      name="usdtAddress"
+                      defaultValue={adminSettings.paymentDetails.bep}
+                      className="w-full bg-zinc-950 border border-zinc-800 rounded-lg p-2 text-white font-mono outline-none animate-[pulse-slow]"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-zinc-500 mb-0.5">binance Receiving Address</label>
+                    <input 
+                      type="text" 
+                      name="usdtAddress"
+                      defaultValue={adminSettings.paymentDetails.binance}
                       className="w-full bg-zinc-950 border border-zinc-800 rounded-lg p-2 text-white font-mono outline-none animate-[pulse-slow]"
                     />
                   </div>

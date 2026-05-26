@@ -1,4 +1,4 @@
-import { User, InvestmentProduct, UserInvestment, DepositRequest, WithdrawalRequest, AdminSettings, ForumNews } from "./types";
+import { User, InvestmentProduct, UserInvestment, DepositRequest, WithdrawalRequest, AdminSettings, ForumNews, PaymentDetails } from "./types";
 
 const getAuthToken = () => localStorage.getItem("aura_token") || "";
 
@@ -66,7 +66,7 @@ export const auraApi = {
     });
   },
 
-  async submitWithdraw(amount: number, paymentDetails: string): Promise<{ success: boolean; withdrawal: WithdrawalRequest }> {
+  async submitWithdraw(amount: number, paymentDetails: PaymentDetails ): Promise<{ success: boolean; withdrawal: WithdrawalRequest }> {
     return apiFetch<{ success: boolean; withdrawal: WithdrawalRequest }>("/api/financial/withdraw", {
       method: "POST",
       body: JSON.stringify({ amount, paymentDetails })

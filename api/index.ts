@@ -285,7 +285,7 @@ app.post("/api/financial/withdraw", (req, res) => {
     return res.status(400).json({ error: "Invalid withdrawal amount. Must be at least 5,000 Dinars." });
   }
 
-  if (!paymentDetails || paymentDetails.trim().length === 0) {
+  if (!paymentDetails) {
     return res.status(400).json({ error: "Receiving payout details (Wallet address or Account credentials) are required." });
   }
 
@@ -309,7 +309,7 @@ app.post("/api/financial/withdraw", (req, res) => {
     deductedAmount: totalDeduction,
     status: 'pending',
     createdAt: new Date().toISOString(),
-    paymentDetails: paymentDetails.trim()
+    paymentDetails: paymentDetails
   };
 
   db.withdrawals.push(newWithdrawal);
@@ -491,12 +491,14 @@ app.get("/api/admin/metrics", verifyAdmin, (req, res) => {
 
 // Update deposit instructions
 app.post("/api/admin/update-settings", verifyAdmin, (req, res) => {
-  const { bankName, accountNumber, accountName, usdtAddress, instructions } = req.body;
+  const { bankName, accountNumber, accountName, trc, bep, binance, instructions } = req.body;
   
   if (bankName) db.adminSettings.paymentDetails.bankName = bankName;
   if (accountNumber) db.adminSettings.paymentDetails.accountNumber = accountNumber;
   if (accountName) db.adminSettings.paymentDetails.accountName = accountName;
-  if (usdtAddress) db.adminSettings.paymentDetails.usdtAddress = usdtAddress;
+  if (trc) db.adminSettings.paymentDetails.trc = trc;
+  if (bep) db.adminSettings.paymentDetails.bep = bep;
+  if (binance) db.adminSettings.paymentDetails.binance = binance;
   if (instructions) db.adminSettings.paymentDetails.instructions = instructions;
 
   saveDatabase();
