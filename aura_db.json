@@ -1,0 +1,102 @@
+{
+  "users": [
+    {
+      "phone": "+1111111111",
+      "username": "Aura CEO",
+      "referralCode": "AURA",
+      "balance": 10000,
+      "role": "admin",
+      "createdAt": "2026-05-26T04:23:48.968Z",
+      "spins": 1
+    },
+    {
+      "phone": "+919347397439",
+      "username": "ramu",
+      "referralCode": "AURA-1990",
+      "referredBy": "AURA",
+      "balance": 0,
+      "role": "user",
+      "createdAt": "2026-05-26T04:29:11.539Z",
+      "spins": 1
+    }
+  ],
+  "passwords": {
+    "+1111111111": "admin",
+    "+919347397439": "admin"
+  },
+  "products": [
+    {
+      "id": "s1",
+      "name": "S1",
+      "image": "https://lqcaso.com/ui7/pro/1.jpg",
+      "price": 10000,
+      "dailyIncome": 1000,
+      "dailyEarning": 1000,
+      "durationDays": 90,
+      "totalIncome": 90000,
+      "status": "active",
+      "category": "deposit",
+      "icon": "⌚",
+      "description": "Starter investment package S1 featuring high quality catalog assets.",
+      "rating": 4.8
+    },
+    {
+      "id": "s2",
+      "name": "S2",
+      "image": "https://lqcaso.com/ui7/pro/2.jpg",
+      "price": 40000,
+      "dailyIncome": 7300,
+      "dailyEarning": 7300,
+      "durationDays": 90,
+      "totalIncome": 657000,
+      "status": "active",
+      "category": "deposit",
+      "icon": "⚡",
+      "description": "Advanced investment package S2 with premium compound earnings model.",
+      "rating": 4.9
+    },
+    {
+      "id": "s3",
+      "name": "S3",
+      "image": "https://lqcaso.com/ui7/pro/3.jpg",
+      "price": 100000,
+      "dailyIncome": 20700,
+      "dailyEarning": 20700,
+      "durationDays": 90,
+      "totalIncome": 1863000,
+      "status": "active",
+      "category": "vip-plan",
+      "icon": "👑",
+      "description": "Pro VIP investment package S3 with maximum daily payout yields.",
+      "rating": 5
+    }
+  ],
+  "investments": [],
+  "deposits": [],
+  "withdrawals": [],
+  "adminSettings": {
+    "paymentDetails": {
+      "bankName": "Aura Global Liquidity Bank",
+      "accountNumber": "9100-2443-8822-09",
+      "accountName": "Aura Escrow Services LLC",
+      "usdtAddress": "TY9H2jKw87hsdKKjsdf8892hhKasdk",
+      "instructions": "Transfer the amount via USDT (TRC20) or your Local Bank Account. Enter your exact Transaction Hash/TXID or Transfer reference below. The Admin will review and credit your balance within 10 minutes."
+    }
+  },
+  "news": [
+    {
+      "id": "news-1",
+      "title": "Aura Platform Launch & Node Pool Upgrades",
+      "content": "We are thrilled to launch Aura - the premium editorial marketplace for high-performance key-vouchers and micro-node bonding. Enjoy zero-fee local deposits and swift automated audits.",
+      "date": "2026-05-24",
+      "author": "Aura Admin Team"
+    },
+    {
+      "id": "news-2",
+      "title": "USDT (TRC20) Liquidity Reserves Audited",
+      "content": "Our corporate reserve wallets have passed third-party Swiss liquidity audits. All global withdrawals remain 100% liquid and instant.",
+      "date": "2026-05-23",
+      "author": "Aura Compliance"
+    }
+  ]
+}

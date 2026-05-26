@@ -94,12 +94,7 @@ export default function PhoneAuth({ onAuthSuccess }: PhoneAuthProps) {
           <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"></span>
           AURA GLOBAL SECURE DECOY
         </div>
-        <h1 className="text-4xl font-semibold tracking-tight font-display text-white mb-2">
-          A U R A
-        </h1>
-        <p className="text-sm text-zinc-400 max-w-sm font-sans">
-          Premium Editorial Digital Key Brokerage & High-Yield Asset Pooling.
-        </p>
+      
       </div>
 
       <div className="w-full max-w-md bg-zinc-900/60 border border-zinc-800/80 rounded-[1.50rem] overflow-hidden backdrop-blur-xl shadow-2xl p-6 md:p-8">
@@ -190,13 +185,7 @@ export default function PhoneAuth({ onAuthSuccess }: PhoneAuthProps) {
                 id="country-code-select"
                 className="bg-zinc-950 border border-zinc-800 rounded-xl px-3 text-xs text-zinc-300 font-mono outline-none focus:border-zinc-600"
               >
-                <option value="+91">+91</option>
                 <option value="+1">+1</option>
-                <option value="+44">+44</option>
-                <option value="+92">+92</option>
-                <option value="+234">+234</option>
-                <option value="+86">+86</option>
-                <option value="+62">+62</option>
               </select>
               <div className="relative flex-1">
                 <span className="absolute inset-y-0 left-0 flex items-center pl-3.5 text-zinc-500">

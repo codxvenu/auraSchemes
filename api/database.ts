@@ -134,13 +134,13 @@ function seedDatabase() {
 
 // MySQL connection pool holder
 let pool: mysql.Pool | null = null;
-const isMySqlConfigured = !!(process.env.DB_HOST || process.env.MYSQL_HOST);
+const isMySqlConfigured = true;
 
 if (isMySqlConfigured) {
-  const host = process.env.DB_HOST || process.env.MYSQL_HOST;
-  const user = process.env.DB_USER || "root";
-  const password = process.env.DB_PASSWORD || "";
-  const database = process.env.DB_NAME || "aura_db";
+  const host = "localhost";
+  const user = "herox";
+  const password = "13!Waheguru!13";
+  const database = "herox";
   const port = Number(process.env.DB_PORT) || 3306;
 
   console.log(`Configuring MySQL database connection: host=${host}:${port}, user=${user}, db=${database}`);

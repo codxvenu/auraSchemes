@@ -112,8 +112,8 @@ export default function App() {
     { id: "all", label: "Marketplace", icon: "🛒", description: "Licensed computing keys" },
     { id: "active-bonds", label: "Active Nodes", icon: "⚡", description: "Your active computation nodes" },
     { id: "lucky-wheel", label: "Lucky Wheel", icon: "🎡", description: "Spin and earn dividends" },
-    { id: "cash-out", label: "Cash Out", icon: "💸", description: "Withdraw instantly with minimal fees" },
     { id: "deposit", label: "Deposit", icon: "💰", description: "Credit your account with bank or cryptos" },
+    { id: "cash-out", label: "Cash Out", icon: "💸", description: "Withdraw instantly with minimal fees" },
     { id: "vip-plan", label: "VIP Plan", icon: "👑", description: "Premium customized asset pools" },
     { id: "global-news", label: "Global News", icon: "📰", description: "Latest company news bulletins" },
     { id: "company-info", label: "Company Info", icon: "🏢", description: "Aura Escrow credentials and reserves" },
@@ -283,6 +283,10 @@ export default function App() {
       setFinancialSubTab("deposit");
     } else if (catId === "global-news") {
       setActiveTab("news");
+    } else if (catId === "company-info") {
+      setActiveTab("companynews");
+    } else if (catId === "invitation") {
+      setActiveTab("invitation");
     } else if (catId === "account-settings") {
       setActiveTab("settings");
       setNewUsername(user?.username || "");
@@ -596,14 +600,14 @@ export default function App() {
     : products.filter(p => p.category === activeCategory);
 
   return (
-    <div className="bg-[#0c0c0e] min-h-screen pb-16 font-sans text-zinc-300 antialiased selection:bg-zinc-800 selection:text-white">
+    <div className="bg-[#0c0c0e] min-h-screen pb-3 font-sans text-zinc-300 antialiased selection:bg-zinc-800 selection:text-white">
       
       {/* GLOBAL NOTIFICATION BANNER */}
       {globalBannerMessage && (
         <div id="global-broadcast-banner" className="bg-zinc-950 border-b border-zinc-900 text-zinc-400 py-2.5 px-4 text-xs">
           <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
             <div className="flex items-center gap-2 overflow-hidden text-ellipsis whitespace-nowrap">
-              <span className="flex-shrink-0 inline-flex items-center justify-center w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
+              {/* <span className="flex-shrink-0 inline-flex items-center justify-center w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span> */}
               <span className="font-mono text-emerald-400 text-[10px] bg-emerald-950/40 border border-emerald-900/60 px-1.5 py-0.5 rounded uppercase">LIVE BROADCAST</span>
               <span className="truncate">{globalBannerMessage}</span>
             </div>
@@ -683,10 +687,6 @@ export default function App() {
 
         {/* CATEGORIES HORIZONTAL CAROUSEL */}
         <div className="mb-6">
-          <div className="flex items-center justify-between mb-3 text-zinc-400 text-xs px-1">
-            <span className="font-mono font-medium tracking-wide uppercase">Core System Modules</span>
-            <span className="text-[10px] text-zinc-600 font-mono">Select any module to focus/navigate</span>
-          </div>
           
           {/* HORIZONTAL CAROUSEL LIST */}
           <div className="flex gap-3 overflow-x-auto pb-3Scrollbar select-none scroll-smooth">
@@ -733,7 +733,7 @@ export default function App() {
                       <span className="px-2.5 py-1 bg-zinc-950 border border-zinc-850 rounded-lg text-[10px] font-mono text-blue-400 font-semibold">Iphone 17 (1% win)</span>
                       <span className="px-2.5 py-1 bg-zinc-950 border border-zinc-850 rounded-lg text-[10px] font-mono text-pink-400 font-semibold">600k IDR (1% win)</span>
                       <span className="px-2.5 py-1 bg-zinc-950 border border-zinc-850 rounded-lg text-[10px] font-mono text-violet-400 font-semibold">Playstation (1% win)</span>
-                      <span className="px-2.5 py-1 bg-zinc-950 border border-zinc-850 rounded-lg text-[10px] font-mono text-cyan-400 font-semibold">Better luck next time (1% win)</span>
+                      {/* <span className="px-2.5 py-1 bg-zinc-950 border border-zinc-850 rounded-lg text-[10px] font-mono text-cyan-400 font-semibold">Better luck next time (1% win)</span> */}
                       <span className="px-2.5 py-1 bg-zinc-950 border border-zinc-850 rounded-lg text-[10px] font-mono text-zinc-400 font-semibold">AC (1% win)</span>
                     </div>
                   </div>
@@ -905,14 +905,7 @@ export default function App() {
                     >
                       All Keys
                     </button>
-                    <button 
-                      onClick={() => setActiveCategory("deposit")}
-                      className={`px-3 py-1 text-[10px] font-mono rounded-lg cursor-pointer ${
-                        activeCategory === "deposit" || activeCategory === "all" ? "text-zinc-400 hover:text-white" : "text-zinc-500"
-                      }`}
-                    >
-                      Standard Bonds
-                    </button>
+                   
                     <button 
                       onClick={() => setActiveCategory("vip-plan")}
                       className={`px-3 py-1 text-[10px] font-mono rounded-lg cursor-pointer ${
@@ -939,12 +932,12 @@ export default function App() {
                       >
                         <div className="space-y-2.5">
                           {/* Rich Package Image */}
-                          <div className="w-full h-24 sm:h-28 md:h-32 bg-zinc-950/40 rounded-xl overflow-hidden relative border border-zinc-950">
+                          <div className="w-full !h-full sm:h-28 md:h-32 bg-zinc-950/40 rounded-xl overflow-hidden relative border border-zinc-950">
                             <img 
                               src={prod.image || "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=600&q=80"} 
                               alt={prod.name}
                               referrerPolicy="no-referrer"
-                              className="w-full h-full object-contain group-hover:scale-102 transition-transform duration-300"
+                              className="w-full h-full group-hover:scale-102 transition-transform duration-300"
                             />
                             {prod.status === "inactive" && (
                               <span className="absolute inset-0 bg-black/60 flex items-center justify-center text-[10px] font-mono font-bold text-red-500 tracking-wider">
@@ -1439,7 +1432,7 @@ export default function App() {
         )}
 
         {/* -------------------- TAB 3: GLOBAL BULLETIN FORUM (NEWS) -------------------- */}
-        {activeTab === "news" && (
+        {activeTab === "companynews" && (
           <div className="space-y-6">
             
             <div id="company-info-bulletin" className="bg-zinc-900 border border-zinc-800 rounded-[1.5rem] p-6 md:p-8 relative overflow-hidden flex flex-col md:flex-row gap-6 justify-between items-start">
@@ -1470,7 +1463,10 @@ export default function App() {
                 </p>
               </div>
             </div>
-
+             </div>
+        )}
+        {activeTab === "news" && (
+<div className="space-y-6">
             {/* NEWS BULLETIN BLOG LISTING */}
             <div className="space-y-4">
               <div className="flex justify-between items-center px-1">
@@ -1511,6 +1507,7 @@ export default function App() {
         {/* -------------------- TAB 4: USER SETTINGS (AFFILIATE PROGRAM DETAILS) -------------------- */}
         {activeTab === "settings" && (
           <div className="space-y-6">
+
 
             {/* BIO EDIT/ACCOUNT INFORMATIONS */}
             <div className="bg-zinc-900 border border-zinc-800 rounded-[1.5rem] p-5 shadow-xl">
@@ -1568,7 +1565,10 @@ export default function App() {
                 </button>
               </form>
             </div>
-
+              </div>
+        )}
+{activeTab === "invitation" && (
+          <div className="space-y-6">
             {/* INTEGRATION REFERRAL AFFILIATE ENGINE LINK BUILDER */}
             <div id="referral-affiliate-section" className="bg-zinc-900 border border-zinc-800 rounded-[1.5rem] p-6 relative overflow-hidden">
               <div className="absolute inset-0 bg-gradient-to-r from-zinc-950/20 to-zinc-900/5 pointer-events-none"></div>
@@ -2203,19 +2203,19 @@ export default function App() {
       </div>
 
       {/* PLATFORM METIC FOOTER */}
-      <footer id="aura-editorial-footer" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-12 border-t border-zinc-900 pt-8 flex flex-col md:flex-row justify-between items-center gap-6 text-[11px] font-mono text-zinc-600">
-        <div className="space-y-1 text-center md:text-left">
+      <footer id="aura-editorial-footer" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-12 border-t border-zinc-900 pt-4 flex flex-col md:flex-row justify-between items-center gap-6 text-[11px] font-mono text-zinc-600">
+        {/* <div className="space-y-1 text-center md:text-left">
           <p className="text-zinc-500 font-bold font-display uppercase tracking-wider text-xs">
             AURA CRYPTO BROKERAGE & SECURE TRUST GMBH
           </p>
           <p className="mt-0.5">Aura escrow is secured legally in Zug, Switzerland. uid: CHE-441-238-981.</p>
-        </div>
+        </div> */}
 
-        <div className="flex gap-4 flex-wrap justify-center font-sans uppercase tracking-widest text-[9px] font-semibold">
+        {/* <div className="flex gap-4 flex-wrap justify-center font-sans uppercase tracking-widest text-[9px] font-semibold">
           <a href="#" className="hover:text-zinc-400">Swiss Escrow association</a>
           <a href="#" className="hover:text-zinc-400">Privacy & Cryptographic standards</a>
           <a href="#" className="hover:text-zinc-400">Node Liquidity Index</a>
-        </div>
+        </div> */}
 
         <p className="text-zinc-700 select-none">
           © {new Date().getFullYear()} Aura Inc. Secure terminal live.

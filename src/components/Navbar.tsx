@@ -124,7 +124,7 @@ export default function Navbar({ user, activeTab, setActiveTab, onLogout }: Navb
         <div className="flex items-center gap-4">
           {/* Always display the user balance on both desktop and mobile */}
           <div className="flex flex-col text-right">
-            <span className="text-[9px] md:text-[10px] text-zinc-500 font-sans tracking-wide uppercase">Capital</span>
+            <span className="text-[9px] md:text-[10px] text-zinc-500 font-sans tracking-wide uppercase">Balance</span>
             <span className="text-xs md:text-sm font-semibold font-mono text-emerald-400">
               {formatCurrency(user.balance)}
             </span>
