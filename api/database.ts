@@ -120,7 +120,7 @@ function seedDatabase() {
   const adminExists = db.users.some(u => u.role === "admin");
   if (!adminExists) {
     const adminUser: User = {
-      phone: "+1111111111",
+      phone: "+964111111111",
       username: "Aura CEO",
       referralCode: "AURA",
       referredBy: undefined,
@@ -136,7 +136,7 @@ function seedDatabase() {
 
 // MySQL connection pool holder
 let pool: mysql.Pool | null = null;
-const isMySqlConfigured = false;
+const isMySqlConfigured = true;
 
 if (isMySqlConfigured) {
   const host = "localhost";
@@ -483,7 +483,7 @@ export async function syncToMySQL() {
     for (const n of db.news) {
       await pool.query(`
         INSERT INTO news (id, title, content, date, author)
-        VALUES (?, ?, ?, ?)
+        VALUES (?, ?, ?, ?, ?)
         ON DUPLICATE KEY UPDATE
           title = VALUES(title),
           content = VALUES(content),

@@ -4,7 +4,7 @@
       "phone": "+1111111111",
       "username": "Aura CEO",
       "referralCode": "AURA",
-      "balance": 153000,
+      "balance": 180000,
       "role": "admin",
       "createdAt": "2026-05-26T04:23:48.968Z",
       "spins": 1
@@ -82,15 +82,15 @@
       "purchaseAmount": 10000,
       "dailyIncome": 1000,
       "dailyEarning": 1000,
-      "earnedSoFar": 63000,
+      "earnedSoFar": 90000,
       "totalIncome": 90000,
       "durationDays": 90,
-      "daysPassed": 63,
-      "status": "active",
+      "daysPassed": 90,
+      "status": "completed",
       "createdAt": "2026-05-26T06:49:35.959Z",
       "startDate": "2026-05-26T06:49:35.959Z",
       "endDate": "2026-08-24T06:49:35.959Z",
-      "lastCollectAt": "2026-05-26T07:36:50.959Z"
+      "lastCollectAt": "2026-05-26T07:57:05.959Z"
     }
   ],
   "deposits": [],
@@ -123,7 +123,7 @@
       "bankName": "Aura Global Liquidity Bank",
       "accountNumber": "9100-2443-8822-09",
       "accountName": "Aura Escrow Services LLC",
-      "trc": "TY9H2jKw87hsdKKjsdf8892hhKasdk",
+      "trc": "TY9H2jKw87hsdKKjsdf88",
       "bep": "TY9H2jKw87hsdKKjsdf8892hhKasdk",
       "binance": "TY9H2jKw87hsdKKjsdf8892hhKasdk",
       "instructions": "Transfer the amount via USDT (TRC20) or your Local Bank Account. Enter your exact Transaction Hash/TXID or Transfer reference below. The Admin will review and credit your balance within 10 minutes."

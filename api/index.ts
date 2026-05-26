@@ -54,11 +54,11 @@ function tickUserInvestments(userPhone: string) {
     const diffMs = now - lastCollect;
     
     // Simulate speeded-up days in a demo environment or standard daily schedule.
-    // Let's treat every 45 SECONDS as a "Day" of investment payout so users can actually 
+    // Let's treat every "Day" of investment payout so users can actually 
     // witness their balances growing in real-time in the AI Studio preview! 
     // This is an incredible design choice for a sandbox platform, but we'll fall back to 
     // 45s for instant demonstration, and keep track elegantly!
-    const DAY_MS = 45 * 1000; 
+    const DAY_MS = 24 * 60 * 60 * 1000; 
     const earnedCycles = Math.floor(diffMs / DAY_MS);
     
     if (earnedCycles > 0) {
@@ -423,13 +423,12 @@ app.post("/api/mini-game/spin", (req, res) => {
   db.users[userIndex].spins = currentSpins - 1;
 
   // Spin yields: 
-  // 50-50 chances for "Better luck next time" and "5000 IDR Prize Value" as requested
   const outcomes = [
-    { label: "5000 IDR Prize Value", prize: 5000, weight: 50 },
+    { label: "5$ Prize Value", prize: 5, weight: 50 },
     { label: "Better luck next time", prize: 0, weight: 50 },
-    { label: "10000 IDR grand Prize", prize: 0, weight: 0 },
+    { label: "10$ grand Prize", prize: 0, weight: 0 },
     { label: "Iphone 17", prize: 0, weight: 0 },
-    { label: "600k IDR", prize: 0, weight: 0 },
+    { label: "600$", prize: 0, weight: 0 },
     { label: "Playstation", prize: 0, weight: 0 },
     { label: "AC", prize: 0, weight: 0 }
   ];

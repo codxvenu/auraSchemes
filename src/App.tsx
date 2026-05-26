@@ -33,10 +33,10 @@ import {
 } from "lucide-react";
 
 const SECTORS = [
-  { backendLabel: "5000 IDR Prize Value", label: "5,000 IQD", icon: "💵", color: "#10b981", rgb: "16, 185, 129" },
-  { backendLabel: "10000 IDR grand Prize", label: "10,000 IQD", icon: "💰", color: "#f59e0b", rgb: "245, 158, 11" },
+  { backendLabel: "5$ Prize Value", label: "5$", icon: "💵", color: "#10b981", rgb: "16, 185, 129" },
+  { backendLabel: "10$ grand Prize", label: "10$", icon: "💰", color: "#f59e0b", rgb: "245, 158, 11" },
   { backendLabel: "Iphone 17", label: "iPhone 17", icon: "📱", color: "#3b82f6", rgb: "59, 130, 246" },
-  { backendLabel: "600k IDR", label: "600k IQD", icon: "💸", color: "#ec4899", rgb: "236, 72, 153" },
+  { backendLabel: "600$", label: "600$", icon: "💸", color: "#ec4899", rgb: "236, 72, 153" },
   { backendLabel: "Playstation", label: "Playstation", icon: "🎮", color: "#8b5cf6", rgb: "139, 92, 246" },
   { backendLabel: "Better luck next time", label: "Better Luck", icon: "✨", color: "#06b6d4", rgb: "6, 182, 212" },
   { backendLabel: "AC", label: "Air Cond.", icon: "💨", color: "#6b7280", rgb: "107, 114, 128" }
@@ -147,34 +147,44 @@ export default function App() {
   }, [token]);
 
   // Periodic user profile & state synchronization to capture real-time passive mining rewards instantly (every 4 seconds)
-  useEffect(() => {
-    console.log(user)
-    let interval: any = null;
-    if (user && token) {
-      interval = setInterval(async () => {
-        try {
-          const res = await auraApi.getMe();
-          setUser(res.user);
-          
-          // Fast-refresh my active nodes to visualize ticks growing
-          const invData = await auraApi.getMyInvestments();
-          setUserInvestments(invData.investments);
-        } catch (err: any) {
-          console.error("Failed to background sync ticks", err);
-          if (err?.message && (err.message.includes("Unauthorized") || err.message.includes("login") || err.message.includes("expired") || err.message.includes("token"))) {
-            localStorage.removeItem("aura_token");
-            sessionStorage.removeItem("aura_token");
-            setToken(null);
-            setUser(null);
-            setActiveTab("marketplace");
-            setActiveCategory("all");
-            setSpinResult(null);
-          }
-        }
-      }, 4000);
+useEffect(() => {
+  if (!token) return;
+
+  const interval = setInterval(async () => {
+    try {
+      const res = await auraApi.getMe();
+      setUser(res.user);
+
+      const invData = await auraApi.getMyInvestments();
+      setUserInvestments(invData.investments);
+
+    } catch (err: any) {
+      console.error("Failed to background sync ticks", err);
+
+      if (
+        err?.message &&
+        (
+          err.message.includes("Unauthorized") ||
+          err.message.includes("login") ||
+          err.message.includes("expired") ||
+          err.message.includes("token")
+        )
+      ) {
+        localStorage.removeItem("aura_token");
+        sessionStorage.removeItem("aura_token");
+
+        setToken(null);
+        setUser(null);
+        setActiveTab("marketplace");
+        setActiveCategory("all");
+        setSpinResult(null);
+      }
     }
-    return () => clearInterval(interval);
-  }, [user, token]);
+  }, 300000);
+
+  return () => clearInterval(interval);
+
+}, [token]);
 
   // Handle successful login/registration
   const handleAuthSuccess = (authenticatedUser: User, sessionToken: string) => {
@@ -355,8 +365,8 @@ export default function App() {
     setProfileError(null);
 
     const amount = parseFloat(depositAmount);
-    if (isNaN(amount) || amount < 5000 || amount > 30000) {
-      setProfileError("Deposit amount must reside strictly between 5,000 IQD and 30,000 IQD.");
+    if (isNaN(amount) || amount < 10 || amount > 500) {
+      setProfileError("Deposit amount must reside strictly between 10$ and 500$.");
       setActionLoading(false);
       setTimeout(() => {
         setProfileError(null);
@@ -399,8 +409,8 @@ export default function App() {
     setProfileError(null);
 
     const amount = parseFloat(withdrawAmount);
-    if (isNaN(amount) || amount < 5000) {
-      setProfileError("Withdrawal amount must be at least 5,000 IQD.");
+    if (isNaN(amount) || amount < 10) {
+      setProfileError("Withdrawal amount must be at least 10$.");
       setActionLoading(false);
       return;
     }
@@ -743,10 +753,10 @@ if (
                     </p>
                     
                     <div className="pt-3 flex flex-wrap gap-2">
-                      <span className="px-2.5 py-1 bg-zinc-950 border border-zinc-800 rounded-lg text-[10px] font-mono text-emerald-400 font-semibold">5000 IDR (90% win)</span>
-                      <span className="px-2.5 py-1 bg-zinc-950 border border-zinc-800 rounded-lg text-[10px] font-mono text-amber-500 font-semibold">10000 IDR (5% win)</span>
+                      <span className="px-2.5 py-1 bg-zinc-950 border border-zinc-800 rounded-lg text-[10px] font-mono text-emerald-400 font-semibold">5$ (90% win)</span>
+                      <span className="px-2.5 py-1 bg-zinc-950 border border-zinc-800 rounded-lg text-[10px] font-mono text-amber-500 font-semibold">10$ (5% win)</span>
                       <span className="px-2.5 py-1 bg-zinc-950 border border-zinc-850 rounded-lg text-[10px] font-mono text-blue-400 font-semibold">Iphone 17 (1% win)</span>
-                      <span className="px-2.5 py-1 bg-zinc-950 border border-zinc-850 rounded-lg text-[10px] font-mono text-pink-400 font-semibold">600k IDR (1% win)</span>
+                      <span className="px-2.5 py-1 bg-zinc-950 border border-zinc-850 rounded-lg text-[10px] font-mono text-pink-400 font-semibold">600$ (1% win)</span>
                       <span className="px-2.5 py-1 bg-zinc-950 border border-zinc-850 rounded-lg text-[10px] font-mono text-violet-400 font-semibold">Playstation (1% win)</span>
                       {/* <span className="px-2.5 py-1 bg-zinc-950 border border-zinc-850 rounded-lg text-[10px] font-mono text-cyan-400 font-semibold">Better luck next time (1% win)</span> */}
                       <span className="px-2.5 py-1 bg-zinc-950 border border-zinc-850 rounded-lg text-[10px] font-mono text-zinc-400 font-semibold">AC (1% win)</span>
@@ -1106,7 +1116,7 @@ if (
                     <span className="text-[10px] font-mono font-bold tracking-widest text-emerald-400 uppercase block">Capital Refunding Desk</span>
                     <h3 className="text-lg font-bold font-display text-white">Deposit Secure Assets</h3>
                     <p className="text-xs text-zinc-400 leading-relaxed">
-                      Refuel your capital pool balance instantly. Minimum: <span className="font-mono text-white">5,000 IQD</span>, Maximum: <span className="font-mono text-white">30,000 IQD</span>. Review escrow details provided below, make transfer, and submit Transaction Hash details to the audit board.
+                      Refuel your capital pool balance instantly. Minimum: <span className="font-mono text-white">10$</span>, Maximum: <span className="font-mono text-white">500$</span>. Review escrow details provided below, make transfer, and submit Transaction Hash details to the audit board.
                     </p>
                   </div>
 
@@ -1170,14 +1180,14 @@ if (
                           </div>
                         </div>
 
-                        <div className="pt-2 border-t border-zinc-900">
+                        {/* <div className="pt-2 border-t border-zinc-900">
                           <span className="text-[10px] text-zinc-500 font-sans block mb-1">Domestic Fiat Route:</span>
                           <div className="space-y-1 text-zinc-300 text-xs">
                             <p><span className="text-zinc-500 font-sans">Bank:</span> {adminSettings.paymentDetails.bankName}</p>
                             <p><span className="text-zinc-500 font-sans">A/C:</span> {adminSettings.paymentDetails.accountNumber}</p>
                             <p><span className="text-zinc-500 font-sans">Name:</span> {adminSettings.paymentDetails.accountName}</p>
                           </div>
-                        </div>
+                        </div> */}
                       </div>
 
                       <div className="pt-2 border-t border-zinc-900 text-[10px] text-zinc-500 italic bg-zinc-900/20 p-2.5 rounded-lg border border-dashed border-zinc-850">
@@ -1195,12 +1205,12 @@ if (
                   <form onSubmit={handleDepositSubmit} className="space-y-3 font-sans">
                     <div className="grid grid-cols-2 gap-3">
                       <div>
-                        <label className="block text-[10px] font-medium text-zinc-500 mb-1">Drawn Amount (IQD)</label>
+                        <label className="block text-[10px] font-medium text-zinc-500 mb-1">Drawn Amount ($)</label>
                         <input 
                           type="number" 
                           required 
-                          min="5000" 
-                          max="30000"
+                          min="10" 
+                          max="500"
                           value={depositAmount} 
                           onChange={(e) => setDepositAmount(e.target.value)} 
                           placeholder="5000"
@@ -1217,7 +1227,7 @@ if (
                           <option value="USDT (TRC20)">USDT (TRC20)</option>
                           <option value="USDT (BEP20)">USDT (BEP20)</option>
                           <option value="Binance ID">Binance ID</option>
-                          <option value="Iraq Bank Account">Iraq Bank Account</option>
+                          {/* <option value="Iraq Bank Account">Iraq Bank Account</option> */}
                         </select>
                       </div>
                     </div>
@@ -1332,7 +1342,7 @@ if (
                     <span className="text-[10px] font-mono font-bold tracking-widest text-emerald-400 uppercase block">Secure Payout Portal</span>
                     <h3 className="text-lg font-bold font-display text-white">Request Digital Withdrawal</h3>
                     <p className="text-xs text-zinc-400 leading-relaxed">
-                      Convert compounding asset dividends to raw capital. Minimum: <span className="font-mono text-white">5,000 IQD</span> (Maximum: Unlimited).
+                      Convert compounding asset dividends to raw capital. Minimum: <span className="font-mono text-white">10$</span> (Maximum: Unlimited).
                     </p>
                     <div className="p-3 bg-zinc-950 border border-zinc-850 rounded-xl text-xs font-mono space-y-1 text-zinc-400">
                       <p className="text-[11px] text-white font-sans font-bold flex items-center gap-1">
@@ -1340,7 +1350,7 @@ if (
                         Regulatory Mandate — GST Audit Rule
                       </p>
                       <p className="text-[10px] text-zinc-500 leading-relaxed">
-                        According to jurisdictional compliance regulations, approved withdrawals deduct the base amount request <strong className="text-white">+ 18% GST</strong> directly from your pool card balance. For example: To withdraw 10,000 IQD, your available capital must reflect at least 11,800 IQD in verified funds.
+                        According to jurisdictional compliance regulations, approved withdrawals deduct the base amount request <strong className="text-white">+ 18% GST</strong> directly from your pool card balance. For example: To withdraw 100$, your available capital must reflect at least 118 $ in verified funds.
                       </p>
                     </div>
                   </div>
@@ -1379,7 +1389,7 @@ if (
                           <option value="USDT (TRC20)">USDT (TRC20)</option>
                           <option value="USDT (BEP20)">USDT (BEP20)</option>
                           <option value="Binance ID">Binance ID</option>
-                          <option value="Iraq Bank Account">Iraq Bank Account</option>
+                          {/* <option value="Iraq Bank Account">Iraq Bank Account</option> */}
                         </select>
                       </div>
 
@@ -1962,7 +1972,7 @@ if (
                     <label className="block text-zinc-500 mb-0.5">USDT Receiving Address (TRC20)</label>
                     <input 
                       type="text" 
-                      name="usdtAddress"
+                      name="trc"
                       defaultValue={adminSettings.paymentDetails.trc}
                       className="w-full bg-zinc-950 border border-zinc-800 rounded-lg p-2 text-white font-mono outline-none animate-[pulse-slow]"
                     />
@@ -1971,7 +1981,7 @@ if (
                     <label className="block text-zinc-500 mb-0.5">USDT Receiving Address (BEP20)</label>
                     <input 
                       type="text" 
-                      name="usdtAddress"
+                      name="bep"
                       defaultValue={adminSettings.paymentDetails.bep}
                       className="w-full bg-zinc-950 border border-zinc-800 rounded-lg p-2 text-white font-mono outline-none animate-[pulse-slow]"
                     />
@@ -1980,7 +1990,7 @@ if (
                     <label className="block text-zinc-500 mb-0.5">binance Receiving Address</label>
                     <input 
                       type="text" 
-                      name="usdtAddress"
+                      name="binance"
                       defaultValue={adminSettings.paymentDetails.binance}
                       className="w-full bg-zinc-950 border border-zinc-800 rounded-lg p-2 text-white font-mono outline-none animate-[pulse-slow]"
                     />
@@ -2096,12 +2106,12 @@ if (
                     <label className="block text-zinc-500 text-[10px] mb-0.5 font-sans">Package Name</label>
                     <input name="p_name" type="text" required placeholder="e.g. Aura Gold Rush S5" className="w-full bg-zinc-900 border border-zinc-800 rounded px-2.5 py-1.5 text-white outline-none" />
                   </div>
-                  <div>
-                    <label className="block text-zinc-500 text-[10px] mb-0.5 font-sans">Price (IQD)</label>
-                    <input name="p_price" type="number" required placeholder="e.g. 500000" className="w-full bg-zinc-900 border border-zinc-800 rounded px-2.5 py-1.5 text-white font-mono outline-none" />
+                  <div>   
+                    <label className="block text-zinc-500 text-[10px] mb-0.5 font-sans">Price ($)</label>
+                    <input name="p_price" type="number" required placeholder="e.g. 500" className="w-full bg-zinc-900 border border-zinc-800 rounded px-2.5 py-1.5 text-white font-mono outline-none" />
                   </div>
                   <div>
-                    <label className="block text-zinc-500 text-[10px] mb-0.5 font-sans">Daily Income (IQD)</label>
+                    <label className="block text-zinc-500 text-[10px] mb-0.5 font-sans">Daily Income ($)</label>
                     <input name="p_daily" type="number" required placeholder="e.g. 6000" className="w-full bg-zinc-900 border border-zinc-800 rounded px-2.5 py-1.5 text-white font-mono outline-none" />
                   </div>
 
@@ -2193,11 +2203,11 @@ if (
                             <input name="e_image" type="text" defaultValue={p.image} className="w-full bg-zinc-900 border border-zinc-800 rounded px-2 py-1 text-white outline-none" />
                           </div>
                           <div>
-                            <label className="block text-zinc-500 mb-0.5">Price (IQD)</label>
+                            <label className="block text-zinc-500 mb-0.5">Price ($)</label>
                             <input name="e_price" type="number" defaultValue={p.price} className="w-full bg-zinc-900 border border-zinc-800 rounded px-2 py-1 text-white font-mono outline-none" />
                           </div>
                           <div>
-                            <label className="block text-zinc-500 mb-0.5">Daily Income (IQD)</label>
+                            <label className="block text-zinc-500 mb-0.5">Daily Income ($)</label>
                             <input name="e_dailyIncome" type="number" defaultValue={p.dailyIncome || p.dailyEarning || 0} className="w-full bg-zinc-900 border border-zinc-800 rounded px-2 py-1 text-white font-mono outline-none" />
                           </div>
                           <div>
@@ -2534,7 +2544,7 @@ if (
             <div className="flex justify-between items-center px-1 text-[11px] font-mono">
               <span className="text-zinc-500">Your Current Balance</span>
               <span className={`font-bold ${user && user.balance >= selectedProductDetail.price ? "text-emerald-400" : "text-amber-500"}`}>
-                {user ? formatCurrency(user.balance) : "0 IQD"}
+                {user ? formatCurrency(user.balance) : "0 $"}
               </span>
             </div>
 

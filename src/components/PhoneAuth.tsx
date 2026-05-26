@@ -11,7 +11,7 @@ export default function PhoneAuth({ onAuthSuccess }: PhoneAuthProps) {
   const [isLogin, setIsLogin] = useState(true);
   
   // Country Codes Selection
-  const [countryCode, setCountryCode] = useState("+1");
+  const [countryCode, setCountryCode] = useState("+964");
   const [phoneNumber, setPhoneNumber] = useState("");
   const [password, setPassword] = useState("");
   const [username, setUsername] = useState("");
@@ -185,7 +185,7 @@ export default function PhoneAuth({ onAuthSuccess }: PhoneAuthProps) {
                 id="country-code-select"
                 className="bg-zinc-950 border border-zinc-800 rounded-xl px-3 text-xs text-zinc-300 font-mono outline-none focus:border-zinc-600"
               >
-                <option value="+1">+1</option>
+                <option value="+964">+964</option>
               </select>
               <div className="relative flex-1">
                 <span className="absolute inset-y-0 left-0 flex items-center pl-3.5 text-zinc-500">
